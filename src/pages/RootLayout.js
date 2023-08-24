@@ -2,6 +2,8 @@ import React, { useMemo, useState } from "react";
 import { Outlet } from "react-router";
 import { createTheme } from "@mui/material/styles";
 import { ThemeProvider, CssBaseline, useMediaQuery, Box } from "@mui/material";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 import { themeSettings } from "../theme";
 import Navbar from "../components/Navbar";
@@ -22,6 +24,7 @@ const RootLayout = () => {
             <Outlet />
           </Box>
         </Box>
+        <ToastContainer />
       </ThemeProvider>
     </div>
   );
