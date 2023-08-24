@@ -121,8 +121,15 @@ const Sidebar = ({ drawerWidth, isSidebarOpen, setIsSidebarOpen, isNonMobile }) 
                       sx={{
                         backgroundColor: active === link ? theme.palette.primary[400] : "transparent",
                         color: active === link ? theme.palette.primary[900] : theme.palette.grey[300],
+                        ":hover": { color: theme.palette.primary.main, "& .MuiSvgIcon-root": { color: theme.palette.primary.main } },
                       }}>
-                      <ListItemIcon sx={{ ml: "2rem", color: active === link ? theme.palette.primary[900] : theme.palette.grey[300] }}>{icon}</ListItemIcon>
+                      <ListItemIcon
+                        sx={{
+                          ml: "2rem",
+                          color: active === link ? theme.palette.primary[900] : theme.palette.grey[300],
+                        }}>
+                        {icon}
+                      </ListItemIcon>
                       <ListItemText primary={text} />
                       {active === link && <ChevronRightOutlined sx={{ ml: "auto" }} />}
                     </ListItemButton>
