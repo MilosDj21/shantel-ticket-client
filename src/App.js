@@ -1,4 +1,11 @@
 import { Outlet, RouterProvider, createBrowserRouter } from "react-router-dom";
+import React, { useMemo } from "react";
+import { createTheme } from "@mui/material/styles";
+import { ThemeProvider, CssBaseline } from "@mui/material";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
+import { themeSettings } from "./theme";
 import Login from "./pages/Login";
 import AllUsers from "./pages/admin/AllUsers";
 import NewUser from "./pages/admin/NewUser";
@@ -13,7 +20,6 @@ const router = createBrowserRouter([
     path: "/",
     element: <RootLayout />,
     children: [
-      { path: "login", element: <Login /> },
       {
         path: "tickets",
         element: <Outlet />,
@@ -34,10 +40,21 @@ const router = createBrowserRouter([
       },
     ],
   },
+  { path: "login", element: <Login /> },
 ]);
 
 function App() {
-  return <RouterProvider router={router} />;
+  const theme = useMemo(() => createTheme(themeSettings), []);
+
+  return (
+    <div className="app">
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <RouterProvider router={router} />
+        <ToastContainer />
+      </ThemeProvider>
+    </div>
+  );
 }
 
 export default App;
