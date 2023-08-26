@@ -28,11 +28,15 @@ const Navbar = ({ isSidebarOpen, setIsSidebarOpen }) => {
               placeholder="Search..."
               sx={{
                 color: theme.palette.grey[300],
-              }}>
-              <IconButton>
-                <Search />
-              </IconButton>
-            </InputBase>
+              }}
+            />
+            <IconButton>
+              <Search
+                sx={{
+                  color: theme.palette.grey.main,
+                }}
+              />
+            </IconButton>
           </FlexBetween>
         </FlexBetween>
         <FlexBetween gap="0.5rem">
