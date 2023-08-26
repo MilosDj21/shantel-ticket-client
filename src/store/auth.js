@@ -6,6 +6,7 @@ const initialUserState = {
   firstName: null,
   lastName: null,
   roles: null,
+  profileImage: null,
 };
 
 const authSlice = createSlice({
@@ -13,10 +14,20 @@ const authSlice = createSlice({
   initialState: initialUserState,
   reducers: {
     login(state, action) {
-      state = action.payload;
+      state.userId = action.payload._id;
+      state.email = action.payload.email;
+      state.firstName = action.payload.firstName;
+      state.lastName = action.payload.lastName;
+      state.roles = action.payload.roles;
+      state.profileImage = action.payload.profileImage;
     },
     logout(state) {
-      state = initialUserState;
+      state.userId = null;
+      state.email = null;
+      state.firstName = null;
+      state.lastName = null;
+      state.roles = null;
+      state.profileImage = null;
     },
   },
 });
