@@ -1,22 +1,28 @@
-import React, { useMemo, useState } from "react";
-import { Outlet } from "react-router";
-import { createTheme } from "@mui/material/styles";
-import { ThemeProvider, CssBaseline, useMediaQuery, Box } from "@mui/material";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import React, { Fragment, useEffect, useState } from "react";
+import { Outlet, useNavigate } from "react-router";
+import { useMediaQuery, Box } from "@mui/material";
+import { useSelector } from "react-redux";
 
-import { themeSettings } from "../theme";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
 
 const RootLayout = () => {
-  const theme = useMemo(() => createTheme(themeSettings), []);
   const isNonMobile = useMediaQuery("(min-width: 600px)");
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const userId = useSelector((state) => state.userId);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!userId) {
+      navigate("/login");
+    } else {
+      console.log(userId);
+    }
+  }, [userId, navigate]);
+
   return (
-    <div className="app">
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
+    <Fragment>
+      {userId && (
         <Box display={isNonMobile ? "flex" : "block"} width="100%" height="100%">
           <Sidebar isNonMobile={isNonMobile} drawerWidth="250px" isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} />
           <Box flexGrow={1}>
@@ -24,9 +30,8 @@ const RootLayout = () => {
             <Outlet />
           </Box>
         </Box>
-        <ToastContainer />
-      </ThemeProvider>
-    </div>
+      )}
+    </Fragment>
   );
 };
 
