@@ -10,6 +10,8 @@ const useHttp = () => {
 
   const dispatch = useDispatch();
 
+  const serverAddress = process.env.ENVIRONMENT === "production" ? process.env.REACT_APP_PROD_BASE_URL : process.env.REACT_APP_DEV_BASE_URL;
+
   const successNotificaion = (message) => {
     return toast.success(message, {
       position: "top-right",
@@ -44,7 +46,7 @@ const useHttp = () => {
       setIsLoading(true);
       setError(null);
       try {
-        const response = await fetch(requestConfig.url, {
+        const response = await fetch(serverAddress + requestConfig.url, {
           method: requestConfig.method ? requestConfig.method : "GET",
           headers: requestConfig.headers ? requestConfig.headers : {},
           body: requestConfig.body ? JSON.stringify(requestConfig.body) : null,

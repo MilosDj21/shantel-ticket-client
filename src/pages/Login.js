@@ -8,8 +8,6 @@ import FlexBetween from "../components/FlexBetween";
 import useHttp from "../hooks/use-http";
 import { authActions } from "../store/auth";
 
-const serverAddress = process.env.ENVIRONMENT === "production" ? process.env.REACT_APP_PROD_BASE_URL : process.env.REACT_APP_DEV_BASE_URL;
-
 const Login = () => {
   const theme = useTheme();
   const [email, setEmail] = useState("");
@@ -29,7 +27,7 @@ const Login = () => {
 
     sendRequest(
       {
-        url: `${serverAddress}/login`,
+        url: "/login",
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -66,7 +64,7 @@ const Login = () => {
             sx={{
               color: theme.palette.grey[300],
               p: "0.2rem 0",
-              fontSize: "20px",
+              fontSize: "18px",
             }}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -87,7 +85,7 @@ const Login = () => {
             sx={{
               color: theme.palette.grey[300],
               p: "0.2rem 0",
-              fontSize: "20px",
+              fontSize: "18px",
             }}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -97,9 +95,10 @@ const Login = () => {
           type="submit"
           variant="contained"
           sx={{
-            p: "0.5rem 4rem",
+            p: "0.4rem 3.5rem",
             fontSize: "16px",
-          }}>
+          }}
+        >
           Login
         </Button>
       </Box>
