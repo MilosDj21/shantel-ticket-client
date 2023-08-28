@@ -36,6 +36,8 @@ const NewUser = () => {
     );
   };
 
+  // TODO: fetch roles from server and display them in select element
+
   return (
     <Box component="form" onSubmit={handleFormSubmit} display="flex" justifyContent="center" alignItems="center" width="100%" height="100%">
       <Box display="flex" flexDirection="column" alignItems="center" gap="2rem" p="4rem 3rem 3rem 3rem" backgroundColor="rgba(17, 18, 20, 0.3)" borderRadius="9px">
