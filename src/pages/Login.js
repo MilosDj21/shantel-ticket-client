@@ -14,13 +14,13 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { isLoading, error, sendRequest } = useHttp();
+  const { sendRequest } = useHttp();
 
   const handleFormSubmit = async (event) => {
     event.preventDefault();
 
     const saveUser = (userData) => {
-      console.log(userData);
+      // console.log(userData);
       dispatch(authActions.login(userData));
       navigate("/");
     };
