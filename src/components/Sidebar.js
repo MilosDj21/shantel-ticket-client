@@ -1,25 +1,10 @@
 import React from "react";
-import { Box, Divider, Drawer, IconButton, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Typography, useTheme } from "@mui/material";
-import {
-  SettingsOutlined,
-  ChevronLeft,
-  ChevronRightOutlined,
-  HomeOutlined,
-  ShoppingCartOutlined,
-  Groups2Outlined,
-  ReceiptLongOutlined,
-  PublicOutlined,
-  PointOfSaleOutlined,
-  TodayOutlined,
-  CalendarMonthOutlined,
-  AdminPanelSettingsOutlined,
-  TrendingUpOutlined,
-  PieChartOutline,
-} from "@mui/icons-material";
+import { Box, Drawer, IconButton, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Typography, useTheme } from "@mui/material";
+import { SettingsOutlined, ChevronLeft, ChevronRightOutlined, HomeOutlined, ReceiptLongOutlined } from "@mui/icons-material";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import FlexBetween from "./FlexBetween";
-import profileImage from "../assets/profile.jpg";
+import ShantelLogo from "../assets/ShantelLogo.png";
 
 const navItems = [
   {
@@ -86,11 +71,20 @@ const Sidebar = ({ drawerWidth, isSidebarOpen, setIsSidebarOpen, isNonMobile }) 
               borderWidth: isNonMobile ? 0 : "2px",
               width: drawerWidth,
             },
-          }}>
+          }}
+        >
           <Box width="100%">
             <Box m="1.5rem 2rem 2rem 3rem">
               <FlexBetween color={theme.palette.grey[300]}>
                 <Box display="flex" alignItems="center" gap="0.5rem">
+                  <Box
+                    component="img"
+                    src={ShantelLogo}
+                    alt="Logo"
+                    sx={{
+                      width: "40px",
+                    }}
+                  />
                   <Typography variant="h4" fontWeight="bold">
                     Shantel Ticket
                   </Typography>
@@ -122,12 +116,14 @@ const Sidebar = ({ drawerWidth, isSidebarOpen, setIsSidebarOpen, isNonMobile }) 
                         backgroundColor: active === link ? theme.palette.primary[400] : "transparent",
                         color: active === link ? theme.palette.primary[900] : theme.palette.grey[300],
                         ":hover": { color: theme.palette.primary.main, "& .MuiSvgIcon-root": { color: theme.palette.primary.main } },
-                      }}>
+                      }}
+                    >
                       <ListItemIcon
                         sx={{
                           ml: "2rem",
                           color: active === link ? theme.palette.primary[900] : theme.palette.grey[300],
-                        }}>
+                        }}
+                      >
                         {icon}
                       </ListItemIcon>
                       <ListItemText primary={text} />
