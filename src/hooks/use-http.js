@@ -45,11 +45,17 @@ const useHttp = () => {
     async (requestConfig, applyData) => {
       setIsLoading(true);
       setError(null);
+      let body = null;
+      if (requestConfig.formData) {
+        body = requestConfig.formData;
+      } else {
+        body = requestConfig.body ? JSON.stringify(requestConfig.body) : null;
+      }
       try {
         const response = await fetch(serverAddress + requestConfig.url, {
           method: requestConfig.method ? requestConfig.method : "GET",
           headers: requestConfig.headers ? requestConfig.headers : {},
-          body: requestConfig.body ? JSON.stringify(requestConfig.body) : null,
+          body: body,
           credentials: "include",
         });
         const res = await response.json();
@@ -82,7 +88,7 @@ const useHttp = () => {
       }
       setIsLoading(false);
     },
-    [dispatch]
+    [dispatch, serverAddress]
   );
 
   return {
