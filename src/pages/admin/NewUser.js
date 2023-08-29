@@ -1,49 +1,75 @@
 import { useState, useEffect } from "react";
 import { Box, InputBase, useTheme, Button, MenuItem, Select } from "@mui/material";
-import { Lock, Person, AccountCircleRounded } from "@mui/icons-material";
-import { useNavigate } from "react-router-dom";
+import { Lock, Person, Email, PhotoCamera, SupervisorAccount } from "@mui/icons-material";
 
 import FlexBetween from "../../components/FlexBetween";
 import useHttp from "../../hooks/use-http";
-import { authActions } from "../../store/auth";
 
 const NewUser = () => {
   const theme = useTheme();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const navigate = useNavigate();
-  const { isLoading, error, sendRequest } = useHttp();
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [profileImage, setProfileImage] = useState("");
+  const [selectedRole, setSelectedRole] = useState("");
+  const [roles, setRoles] = useState([]);
+  const { isLoading, sendRequest } = useHttp();
 
-  useEffect(() => {}, []);
+  useEffect(() => {
+    const saveRole = (rolesData) => {
+      setRoles(rolesData);
+    };
+
+    sendRequest(
+      {
+        url: "/roles",
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      },
+      saveRole
+    );
+  }, [sendRequest]);
 
   const handleFormSubmit = async (event) => {
     event.preventDefault();
+    if (!email || !password || !firstName || !lastName || !selectedRole) return;
+
+    const formData = new FormData();
+    formData.append("email", email);
+    formData.append("password", password);
+    formData.append("firstName", firstName);
+    formData.append("lastName", lastName);
+    formData.append("image", profileImage);
+    formData.append("roles", selectedRole);
 
     const saveUser = (userData) => {
-      console.log(userData);
+      setEmail("");
+      setPassword("");
+      setFirstName("");
+      setLastName("");
+      setProfileImage("");
+      setSelectedRole("");
     };
 
     sendRequest(
       {
         url: "/users",
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: { email, password },
+        formData: formData,
       },
       saveUser
     );
   };
-
-  // TODO: fetch roles from server and display them in select element
 
   return (
     <Box component="form" onSubmit={handleFormSubmit} display="flex" justifyContent="center" alignItems="center" width="100%" height="100%">
       <Box display="flex" flexDirection="column" alignItems="center" gap="2rem" p="4rem 3rem 3rem 3rem" backgroundColor="rgba(17, 18, 20, 0.3)" borderRadius="9px">
         {/* Email */}
         <FlexBetween backgroundColor={theme.palette.background.light} borderRadius="9px" gap="1rem" p="0.1rem 1.5rem">
-          <Person
+          <Email
             sx={{
               color: theme.palette.grey[700],
               fontSize: "30px",
@@ -76,7 +102,7 @@ const NewUser = () => {
             error
             required
             type="text"
-            placeholder="password"
+            placeholder="Password"
             sx={{
               color: theme.palette.grey[300],
               p: "0.2rem 0",
@@ -105,8 +131,8 @@ const NewUser = () => {
               p: "0.2rem 0",
               fontSize: "18px",
             }}
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
           />
         </FlexBetween>
 
@@ -128,14 +154,34 @@ const NewUser = () => {
               p: "0.2rem 0",
               fontSize: "18px",
             }}
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
+          />
+        </FlexBetween>
+
+        {/* PROFILE IMAGE */}
+        <FlexBetween backgroundColor={theme.palette.background.light} borderRadius="9px" gap="1rem" p="0.1rem 1.5rem">
+          <PhotoCamera
+            sx={{
+              color: theme.palette.grey[700],
+              fontSize: "30px",
+            }}
+          />
+          <InputBase
+            required
+            type="file"
+            sx={{
+              color: theme.palette.grey[300],
+              p: "0.2rem 0",
+              fontSize: "15px",
+            }}
+            onChange={(e) => setProfileImage(e.target.files[0])}
           />
         </FlexBetween>
 
         {/* ROLES */}
         <FlexBetween backgroundColor={theme.palette.background.light} borderRadius="9px" gap="1rem" p="0.1rem 1.5rem" width="100%">
-          <Person
+          <SupervisorAccount
             sx={{
               color: theme.palette.grey[700],
               fontSize: "30px",
@@ -153,23 +199,26 @@ const NewUser = () => {
                 p: "0.5rem 0",
               },
             }}
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            defaultValue=""
+            onChange={(e) => setSelectedRole(e.target.value)}
           >
-            <MenuItem value={10}>Ten</MenuItem>
-            <MenuItem value={20}>Twenty</MenuItem>
-            <MenuItem value={30}>Thirty</MenuItem>
+            {roles.map((role) => (
+              <MenuItem key={role._id} value={role._id}>
+                {role.name}
+              </MenuItem>
+            ))}
           </Select>
         </FlexBetween>
         <Button
           type="submit"
           variant="contained"
+          disabled={isLoading}
           sx={{
             p: "0.4rem 3.5rem",
             fontSize: "16px",
           }}
         >
-          Create
+          {isLoading ? "Loading..." : "Create"}
         </Button>
       </Box>
     </Box>
