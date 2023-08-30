@@ -1,7 +1,8 @@
 import { Outlet, RouterProvider, createBrowserRouter } from "react-router-dom";
-import React, { useMemo } from "react";
+import React, { useMemo, useEffect, useState } from "react";
 import { createTheme } from "@mui/material/styles";
 import { ThemeProvider, CssBaseline } from "@mui/material";
+import { useDispatch } from "react-redux";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -14,12 +15,15 @@ import AllTickets from "./pages/tech-ticket/AllTickets";
 import NewTicket from "./pages/tech-ticket/NewTicket";
 import TicketDetails from "./pages/tech-ticket/TicketDetails";
 import RootLayout from "./pages/RootLayout";
+import Dashboard from "./pages/Dashboard";
+import { authActions } from "./store/auth";
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <RootLayout />,
     children: [
+      { index: true, element: <Dashboard /> },
       {
         path: "tickets",
         element: <Outlet />,
@@ -45,14 +49,26 @@ const router = createBrowserRouter([
 
 function App() {
   const theme = useMemo(() => createTheme(themeSettings), []);
+  const dispatch = useDispatch();
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const user = localStorage.getItem("user");
+    if (user !== null) {
+      dispatch(authActions.login(JSON.parse(user)));
+    }
+    setIsLoading(false);
+  }, [dispatch]);
 
   return (
     <div className="app">
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
-        <RouterProvider router={router} />
-        <ToastContainer />
-      </ThemeProvider>
+      {!isLoading && (
+        <ThemeProvider theme={theme}>
+          <CssBaseline />
+          <RouterProvider router={router} />
+          <ToastContainer />
+        </ThemeProvider>
+      )}
     </div>
   );
 }
