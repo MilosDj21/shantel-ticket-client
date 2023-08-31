@@ -1,58 +1,111 @@
-import React from "react";
 import { Box, Drawer, IconButton, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Typography, useTheme } from "@mui/material";
-import { SettingsOutlined, ChevronLeft, ChevronRightOutlined, HomeOutlined, ReceiptLongOutlined } from "@mui/icons-material";
+import { ChevronLeft, ChevronRightOutlined, HomeOutlined, Person, SupervisorAccount, Description } from "@mui/icons-material";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
+
 import FlexBetween from "./FlexBetween";
+import useHttp from "../hooks/use-http";
 import ShantelLogo from "../assets/ShantelLogo.png";
 
-const navItems = [
-  {
-    text: "Dashboard",
-    icon: <HomeOutlined />,
-    link: "",
-  },
-  {
-    text: "Ticket",
-    icon: null,
-    link: null,
-  },
-  {
-    text: "All Tickets",
-    icon: <ReceiptLongOutlined />,
-    link: "tickets",
-  },
-  {
-    text: "New Ticket",
-    icon: <ReceiptLongOutlined />,
-    link: "tickets/new",
-  },
-  {
-    text: "Admin",
-    icon: null,
-    link: null,
-  },
-  {
-    text: "All Users",
-    icon: <SettingsOutlined />,
-    link: "users",
-  },
-  {
-    text: "New User",
-    icon: <SettingsOutlined />,
-    link: "users/new",
-  },
-];
-
 const Sidebar = ({ drawerWidth, isSidebarOpen, setIsSidebarOpen, isNonMobile }) => {
-  const { pathname } = useLocation();
-  const [active, setActive] = useState("");
-  const navigate = useNavigate();
   const theme = useTheme();
+  const userRoles = useSelector((state) => state.roles);
+  const { pathname } = useLocation();
+  const { sendRequest } = useHttp();
+  const navigate = useNavigate();
+  const [active, setActive] = useState("");
+  const [adminSidebarItems, setAdminSidebarItems] = useState(false);
+
+  let navItems = [];
+
+  if (adminSidebarItems) {
+    navItems = [
+      {
+        text: "Dashboard",
+        icon: <HomeOutlined />,
+        link: "",
+      },
+      {
+        text: "Ticket",
+        icon: null,
+        link: null,
+      },
+      {
+        text: "All Tickets",
+        icon: <Description />,
+        link: "tickets",
+      },
+      {
+        text: "New Ticket",
+        icon: <Description />,
+        link: "tickets/new",
+      },
+      {
+        text: "Admin",
+        icon: null,
+        link: null,
+      },
+      {
+        text: "All Users",
+        icon: <SupervisorAccount />,
+        link: "users",
+      },
+      {
+        text: "New User",
+        icon: <Person />,
+        link: "users/new",
+      },
+    ];
+  } else {
+    navItems = [
+      {
+        text: "Dashboard",
+        icon: <HomeOutlined />,
+        link: "",
+      },
+      {
+        text: "Ticket",
+        icon: null,
+        link: null,
+      },
+      {
+        text: "All Tickets",
+        icon: <Description />,
+        link: "tickets",
+      },
+      {
+        text: "New Ticket",
+        icon: <Description />,
+        link: "tickets/new",
+      },
+    ];
+  }
 
   useEffect(() => {
     setActive(pathname.substring(1));
   }, [pathname]);
+
+  useEffect(() => {
+    const saveRole = (roleData) => {
+      if (roleData.name === "Super Admin" || roleData.name === "Admin") {
+        setAdminSidebarItems(true);
+      }
+    };
+
+    for (const r of userRoles) {
+      sendRequest(
+        {
+          url: `/roles/${r}`,
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        },
+        saveRole
+      );
+    }
+  }, [sendRequest, userRoles]);
 
   return (
     <Box component="nav">
