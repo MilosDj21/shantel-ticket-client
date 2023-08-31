@@ -1,7 +1,11 @@
 import React from "react";
+import { useParams } from "react-router-dom";
+
+import UserForm from "../../components/UserForm";
 
 const UserDetails = () => {
-  return <div>UserDetails</div>;
+  const { userId } = useParams();
+  return <UserForm method="PATCH" userId={userId} />;
 };
 
 export default UserDetails;
