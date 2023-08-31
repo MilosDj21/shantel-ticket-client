@@ -16,6 +16,7 @@ import NewTicket from "./pages/tech-ticket/NewTicket";
 import TicketDetails from "./pages/tech-ticket/TicketDetails";
 import RootLayout from "./pages/RootLayout";
 import Dashboard from "./pages/Dashboard";
+import ProtectedRoutes from "./components/ProtectedRoutes";
 import { authActions } from "./store/auth";
 
 const router = createBrowserRouter([
@@ -35,7 +36,7 @@ const router = createBrowserRouter([
       },
       {
         path: "users",
-        element: <Outlet />,
+        element: <ProtectedRoutes />,
         children: [
           { index: true, element: <AllUsers /> },
           { path: "new", element: <NewUser /> },
