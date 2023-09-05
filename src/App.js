@@ -8,12 +8,12 @@ import "react-toastify/dist/ReactToastify.css";
 
 import { themeSettings } from "./theme";
 import Login from "./pages/Login";
-import AllUsers from "./pages/admin/AllUsers";
-import NewUser from "./pages/admin/NewUser";
-import UserDetails from "./pages/admin/UserDetails";
-import AllTickets from "./pages/tech-ticket/AllTickets";
-import NewTicket from "./pages/tech-ticket/NewTicket";
-import TicketDetails from "./pages/tech-ticket/TicketDetails";
+import AllUsers from "./pages/admin/users/AllUsers";
+import NewUser from "./pages/admin/users/NewUser";
+import UserDetails from "./pages/admin/users/UserDetails";
+import AllTickets from "./pages/admin/tech-ticket/AllTickets";
+import NewTicket from "./pages/admin/tech-ticket/NewTicket";
+import TicketDetails from "./pages/admin/tech-ticket/TicketDetails";
 import RootLayout from "./pages/RootLayout";
 import Dashboard from "./pages/Dashboard";
 import ProtectedRoutes from "./components/ProtectedRoutes";
@@ -35,12 +35,27 @@ const router = createBrowserRouter([
         ],
       },
       {
-        path: "users",
+        path: "admin",
         element: <ProtectedRoutes />,
         children: [
-          { index: true, element: <AllUsers /> },
-          { path: "new", element: <NewUser /> },
-          { path: ":userId", element: <UserDetails /> },
+          {
+            path: "users",
+            element: <Outlet />,
+            children: [
+              { index: true, element: <AllUsers /> },
+              { path: "new", element: <NewUser /> },
+              { path: ":userId", element: <UserDetails /> },
+            ],
+          },
+          {
+            path: "tickets",
+            element: <Outlet />,
+            children: [
+              { index: true, element: <AllTickets /> },
+              { path: "new", element: <NewTicket /> },
+              { path: ":ticketId", element: <TicketDetails /> },
+            ],
+          },
         ],
       },
     ],
