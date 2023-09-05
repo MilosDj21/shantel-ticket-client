@@ -1,4 +1,4 @@
-import UserForm from "../../components/UserForm";
+import UserForm from "../../../components/UserForm";
 
 const NewUser = () => {
   return <UserForm method="POST" />;

@@ -1,7 +1,7 @@
 import React from "react";
 import { useParams } from "react-router-dom";
 
-import UserForm from "../../components/UserForm";
+import UserForm from "../../../components/UserForm";
 
 const UserDetails = () => {
   const { userId } = useParams();

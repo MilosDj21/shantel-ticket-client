@@ -3,8 +3,8 @@ import { Box, useTheme } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import { useNavigate } from "react-router-dom";
 
-import useHttp from "../../hooks/use-http";
-import TableHeader from "../../components/TableHeader";
+import useHttp from "../../../hooks/use-http";
+import TableHeader from "../../../components/TableHeader";
 
 const AllUsers = () => {
   const theme = useTheme();

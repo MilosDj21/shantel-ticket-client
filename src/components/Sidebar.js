@@ -49,12 +49,22 @@ const Sidebar = ({ drawerWidth, isSidebarOpen, setIsSidebarOpen, isNonMobile }) 
       {
         text: "All Users",
         icon: <SupervisorAccount />,
-        link: "users",
+        link: "admin/users",
       },
       {
         text: "New User",
         icon: <Person />,
-        link: "users/new",
+        link: "admin/users/new",
+      },
+      {
+        text: "All Tickets",
+        icon: <Description />,
+        link: "admin/tickets",
+      },
+      {
+        text: "New Ticket",
+        icon: <Description />,
+        link: "admin/tickets/new",
       },
     ];
   } else {
