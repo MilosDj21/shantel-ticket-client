@@ -23,7 +23,7 @@ const RootLayout = () => {
       {userId && (
         <Box display={isNonMobile ? "flex" : "block"} width="100%" height="100%">
           <Sidebar isNonMobile={isNonMobile} drawerWidth="250px" isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} />
-          <Box flexGrow={1}>
+          <Box flexGrow={1} overflow="hidden">
             <Navbar isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} />
             <Outlet />
           </Box>
