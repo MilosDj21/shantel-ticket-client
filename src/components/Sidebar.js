@@ -1,121 +1,33 @@
 import { Box, Drawer, IconButton, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Typography, useTheme } from "@mui/material";
-import { ChevronLeft, ChevronRightOutlined, HomeOutlined, Person, SupervisorAccount, Description } from "@mui/icons-material";
+import { ChevronLeft, ChevronRightOutlined } from "@mui/icons-material";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 
 import FlexBetween from "./FlexBetween";
-import useHttp from "../hooks/use-http";
+import useSidebarItems from "../hooks/use-sidebar-items";
 import ShantelLogo from "../assets/ShantelLogo.png";
 
 const Sidebar = ({ drawerWidth, isSidebarOpen, setIsSidebarOpen, isNonMobile }) => {
   const theme = useTheme();
   const userRoles = useSelector((state) => state.roles);
   const { pathname } = useLocation();
-  const { sendRequest } = useHttp();
+  const getSidebarItems = useSidebarItems();
   const navigate = useNavigate();
   const [active, setActive] = useState("");
-  const [adminSidebarItems, setAdminSidebarItems] = useState(false);
-
-  let navItems = [];
-
-  if (adminSidebarItems) {
-    navItems = [
-      {
-        text: "Dashboard",
-        icon: <HomeOutlined />,
-        link: "",
-      },
-      {
-        text: "Ticket",
-        icon: null,
-        link: null,
-      },
-      {
-        text: "All Tickets",
-        icon: <Description />,
-        link: "tickets",
-      },
-      {
-        text: "New Ticket",
-        icon: <Description />,
-        link: "tickets/new",
-      },
-      {
-        text: "Admin",
-        icon: null,
-        link: null,
-      },
-      {
-        text: "All Users",
-        icon: <SupervisorAccount />,
-        link: "admin/users",
-      },
-      {
-        text: "New User",
-        icon: <Person />,
-        link: "admin/users/new",
-      },
-      {
-        text: "All Tickets",
-        icon: <Description />,
-        link: "admin/tickets",
-      },
-      {
-        text: "New Ticket",
-        icon: <Description />,
-        link: "admin/tickets/new",
-      },
-    ];
-  } else {
-    navItems = [
-      {
-        text: "Dashboard",
-        icon: <HomeOutlined />,
-        link: "",
-      },
-      {
-        text: "Ticket",
-        icon: null,
-        link: null,
-      },
-      {
-        text: "All Tickets",
-        icon: <Description />,
-        link: "tickets",
-      },
-      {
-        text: "New Ticket",
-        icon: <Description />,
-        link: "tickets/new",
-      },
-    ];
-  }
+  const [sidebarItems, setSidebarItems] = useState([]);
 
   useEffect(() => {
     setActive(pathname.substring(1));
   }, [pathname]);
 
   useEffect(() => {
-    const saveRole = (roleData) => {
-      if (roleData.name === "Super Admin" || roleData.name === "Admin") {
-        setAdminSidebarItems(true);
-      }
+    const populateItems = async () => {
+      const items = await getSidebarItems(userRoles);
+      setSidebarItems(items);
     };
-
-    for (const r of userRoles) {
-      sendRequest(
-        {
-          url: `/roles/${r}`,
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        },
-        saveRole
-      );
-    }
-  }, [sendRequest, userRoles]);
+    populateItems();
+  }, [getSidebarItems, userRoles]);
 
   return (
     <Box component="nav">
@@ -160,7 +72,7 @@ const Sidebar = ({ drawerWidth, isSidebarOpen, setIsSidebarOpen, isNonMobile }) 
               </FlexBetween>
             </Box>
             <List>
-              {navItems.map(({ text, icon, link }) => {
+              {sidebarItems.map(({ text, icon, link }) => {
                 if (!icon) {
                   return (
                     <Typography key={text} sx={{ m: "2.25rem 0 1rem 3rem", color: theme.palette.grey[300] }}>
