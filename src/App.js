@@ -11,9 +11,12 @@ import Login from "./pages/Login";
 import AllUsers from "./pages/admin/users/AllUsers";
 import NewUser from "./pages/admin/users/NewUser";
 import UserDetails from "./pages/admin/users/UserDetails";
-import AllTickets from "./pages/admin/tech-ticket/AllTickets";
-import NewTicket from "./pages/admin/tech-ticket/NewTicket";
-import TicketDetails from "./pages/admin/tech-ticket/TicketDetails";
+import AdminAllTickets from "./pages/admin/tech-ticket/AllTickets";
+import AdminNewTicket from "./pages/admin/tech-ticket/NewTicket";
+import AdminTicketDetails from "./pages/admin/tech-ticket/TicketDetails";
+import MyTickets from "./pages/tech-ticket/AllTickets";
+import NewTicket from "./pages/tech-ticket/NewTicket";
+import TicketDetails from "./pages/tech-ticket/TicketDetails";
 import RootLayout from "./pages/RootLayout";
 import Dashboard from "./pages/Dashboard";
 import ProtectedRoutes from "./components/ProtectedRoutes";
@@ -29,7 +32,7 @@ const router = createBrowserRouter([
         path: "tickets",
         element: <Outlet />,
         children: [
-          { index: true, element: <AllTickets /> },
+          { index: true, element: <MyTickets /> },
           { path: "new", element: <NewTicket /> },
           { path: ":ticketId", element: <TicketDetails /> },
         ],
@@ -51,9 +54,9 @@ const router = createBrowserRouter([
             path: "tickets",
             element: <Outlet />,
             children: [
-              { index: true, element: <AllTickets /> },
-              { path: "new", element: <NewTicket /> },
-              { path: ":ticketId", element: <TicketDetails /> },
+              { index: true, element: <AdminAllTickets /> },
+              { path: "new", element: <AdminNewTicket /> },
+              { path: ":ticketId", element: <AdminTicketDetails /> },
             ],
           },
         ],
