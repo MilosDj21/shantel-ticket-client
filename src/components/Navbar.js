@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { Menu as MenuIcon, Search, SettingsOutlined, ArrowDropDownOutlined } from "@mui/icons-material";
+import { Menu as MenuIcon, SettingsOutlined, ArrowDropDownOutlined } from "@mui/icons-material";
 import { useDispatch, useSelector } from "react-redux";
-import { AppBar, IconButton, InputBase, Toolbar, useTheme, Button, Menu, MenuItem, Box, Typography } from "@mui/material";
+import { AppBar, IconButton, Toolbar, useTheme, Button, Menu, MenuItem, Box, Typography } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
 import FlexBetween from "./FlexBetween";
@@ -58,21 +58,6 @@ const Navbar = ({ isSidebarOpen, setIsSidebarOpen }) => {
               }}
             />
           </IconButton>
-          <FlexBetween backgroundColor={theme.palette.background.light} borderRadius="9px" gap="3rem" p="0.1rem 1.5rem">
-            <InputBase
-              placeholder="Search..."
-              sx={{
-                color: theme.palette.grey[300],
-              }}
-            />
-            <IconButton>
-              <Search
-                sx={{
-                  color: theme.palette.grey.main,
-                }}
-              />
-            </IconButton>
-          </FlexBetween>
         </FlexBetween>
         <FlexBetween gap="0.5rem">
           <IconButton>

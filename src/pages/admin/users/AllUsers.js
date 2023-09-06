@@ -11,10 +11,10 @@ const AllUsers = () => {
   const navigate = useNavigate();
   const [data, setData] = useState([]);
   const { isLoading, sendRequest } = useHttp();
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     const getUsers = (usersData) => {
-      // console.log(usersData);
       setData(usersData);
     };
 
@@ -29,6 +29,40 @@ const AllUsers = () => {
       getUsers
     );
   }, [sendRequest]);
+
+  const searchInput = (event) => {
+    setSearch(event.target.value);
+  };
+
+  const searchHandle = async () => {
+    const getUsers = (usersData) => {
+      setData(usersData);
+    };
+
+    if (search) {
+      sendRequest(
+        {
+          url: `/users/search/${search}`,
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        },
+        getUsers
+      );
+    } else {
+      sendRequest(
+        {
+          url: "/users",
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        },
+        getUsers
+      );
+    }
+  };
 
   const rowClickHandle = async (params) => {
     navigate(`/users/${params.id}`);
@@ -64,7 +98,7 @@ const AllUsers = () => {
 
   return (
     <Box m="2.5rem 2.5rem">
-      <TableHeader title="Users" subtitle={`${data.length} Users`} />
+      <TableHeader title="Users" subtitle={`${data.length} Users`} searchInput={searchInput} searchHandle={searchHandle} />
       <Box
         mt="40px"
         height="75vh"
