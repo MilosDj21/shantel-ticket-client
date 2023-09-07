@@ -83,6 +83,17 @@ const AllUsers = () => {
       field: "roles",
       headerName: "Roles",
       flex: 1,
+      renderCell: (params) => {
+        let roles = "";
+        params.value.forEach((p, index, array) => {
+          if (index !== array.length - 1) {
+            roles += `${p.name}, `;
+          } else {
+            roles += p.name;
+          }
+        });
+        return roles;
+      },
     },
     {
       field: "firstName",

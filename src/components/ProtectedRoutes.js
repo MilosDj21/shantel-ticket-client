@@ -12,20 +12,9 @@ const ProtectedRoutes = () => {
   useEffect(() => {
     const request = async () => {
       for (const role of userRoles) {
-        await sendRequest(
-          {
-            url: `/roles/${role}`,
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-            },
-          },
-          (roleData) => {
-            if (roleData.name === "Super Admin" || roleData.name === "Admin") {
-              setIsAdmin(true);
-            }
-          }
-        );
+        if (role.name === "Super Admin" || role.name === "Admin") {
+          setIsAdmin(true);
+        }
       }
       setIsLoading(false);
     };
