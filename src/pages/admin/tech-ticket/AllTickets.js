@@ -67,7 +67,7 @@ const AllTickets = () => {
   };
 
   const rowClickHandle = async (params) => {
-    navigate(`/tickets/${params.id}`);
+    navigate(`/admin/tickets/${params.id}`);
   };
 
   const columns = [
@@ -121,20 +121,21 @@ const AllTickets = () => {
       headerName: "Last Reply",
       flex: 0.2,
       renderCell: (params) => {
-        console.log(params.value);
-        return "reply";
-        // return (
-        //   <Box
-        //     component="img"
-        //     alt="profile"
-        //     src={serverAddress + "/" + params.value.profileImage}
-        //     crossOrigin="use-credentials"
-        //     height="32px"
-        //     width="32px"
-        //     borderRadius="50%"
-        //     sx={{ objectFit: "cover" }}
-        //   />
-        // );
+        const lastItem = params.value[params.value.length - 1];
+        return lastItem ? (
+          <Box
+            component="img"
+            alt="profile"
+            src={serverAddress + "/" + lastItem.user.profileImage}
+            crossOrigin="use-credentials"
+            height="32px"
+            width="32px"
+            borderRadius="50%"
+            sx={{ objectFit: "cover" }}
+          />
+        ) : (
+          ""
+        );
       },
     },
     {
@@ -164,6 +165,7 @@ const AllTickets = () => {
           "& .MuiDataGrid-root": {
             color: theme.palette.grey[300],
             border: "none",
+            cursor: "pointer",
           },
           "& .MuiDataGrid-cell": {
             borderBottom: `1px solid ${theme.palette.grey[800]} !important`,

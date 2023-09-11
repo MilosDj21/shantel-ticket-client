@@ -65,7 +65,7 @@ const AllUsers = () => {
   };
 
   const rowClickHandle = async (params) => {
-    navigate(`/users/${params.id}`);
+    navigate(`/admin/users/${params.id}`);
   };
 
   const columns = [
@@ -117,6 +117,7 @@ const AllUsers = () => {
           "& .MuiDataGrid-root": {
             color: theme.palette.grey[300],
             border: "none",
+            cursor: "pointer",
           },
           "& .MuiDataGrid-cell": {
             borderBottom: `1px solid ${theme.palette.grey[800]} !important`,

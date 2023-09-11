@@ -36,7 +36,7 @@ const UserForm = ({ method, userId = null }) => {
     //IF EXISTING USER GET DATA FROM SERVER
     if (userId) {
       const saveUser = (userData) => {
-        console.log(userData);
+        // console.log(userData);
         setEmail(userData.email);
         setFirstName(userData.firstName);
         setLastName(userData.lastName);
