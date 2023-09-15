@@ -7,6 +7,7 @@ import { SettingsOutlined, Delete } from "@mui/icons-material";
 import useHttp from "../../../hooks/use-http";
 import FlexBetween from "../../../components/FlexBetween";
 import AlertDialog from "../../../components/AlertDialog";
+import TextEditor from "../../../components/TextEditor";
 
 const serverAddress = process.env.ENVIRONMENT === "production" ? process.env.REACT_APP_PROD_BASE_URL : process.env.REACT_APP_DEV_BASE_URL;
 
@@ -18,6 +19,7 @@ const TicketDetails = () => {
   const { ticketId } = useParams();
   const { isLoading, sendRequest } = useHttp();
   const { sendRequest: changeTicketStatus } = useHttp();
+  const { isLoading: messageIsLoading, sendRequest: messageSendRequest } = useHttp();
   const [data, setData] = useState(null);
   const [ticketLogs, setTicketLogs] = useState(null);
   const [ticketStatus, setTicketStatus] = useState(null);
@@ -34,14 +36,13 @@ const TicketDetails = () => {
     return `${day}-${month}-${year} ${hour}:${minutes}:${seconds}`;
   };
 
-  useEffect(() => {
-    const getTicketDetails = (ticketData) => {
-      setData(ticketData);
-      setTicketStatus(ticketData.status);
-      setTicketLogs(ticketData.logs);
-      console.log(ticketData);
-    };
+  const getHtmlFromString = (message) => {
+    const messageArray = [];
+    // TODO: SPLIT MESSAGE BY HTML TAGS AND RETURN ARRAY OF MESSAGES TO RENDER AS HTML PARAGRAPHS
+  };
 
+  // RETRIEVE INITIAL DATA FROM SERVER
+  useEffect(() => {
     sendRequest(
       {
         url: `/techTickets/${ticketId}`,
@@ -50,15 +51,17 @@ const TicketDetails = () => {
           "Content-Type": "application/json",
         },
       },
-      getTicketDetails
+      (ticketData) => {
+        setData(ticketData);
+        setTicketStatus(ticketData.status);
+        setTicketLogs(ticketData.logs);
+        console.log(ticketData);
+      }
     );
   }, [sendRequest, ticketId]);
 
   const changeTicketStatusHandler = async (event) => {
-    const updateTicket = (ticketData) => {
-      setTicketStatus(ticketData.status);
-    };
-
+    // CHANGE TICKET STATUS
     changeTicketStatus(
       {
         url: "/techTickets",
@@ -71,36 +74,33 @@ const TicketDetails = () => {
           status: event.target.value,
         },
       },
-      updateTicket
-    );
-
-    const updateTicketLogs = (logData) => {
-      setTicketLogs((prevVal) => {
-        return [...prevVal, logData];
-      });
-    };
-
-    changeTicketStatus(
-      {
-        url: `/techTickets/${ticketId}/ticketLog`,
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: {
-          message: `Ticket status was changed to ${event.target.value}`,
-          userId,
-        },
-      },
-      updateTicketLogs
+      (ticketData) => {
+        setTicketStatus(ticketData.status);
+        // UPDATE CHANGE STATUS TICKET LOGS
+        changeTicketStatus(
+          {
+            url: `/techTickets/${ticketId}/ticketLog`,
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: {
+              message: `Ticket status was changed to ${event.target.value}`,
+              userId,
+            },
+          },
+          (logData) => {
+            setTicketLogs((prevVal) => {
+              return [...prevVal, logData];
+            });
+          }
+        );
+      }
     );
   };
 
+  // DELETE TICKET
   const deleteTicketHandler = async () => {
-    const getTicketDetails = (ticketData) => {
-      navigate("/admin/tickets/");
-    };
-
     sendRequest(
       {
         url: `/techTickets/${ticketId}`,
@@ -109,7 +109,52 @@ const TicketDetails = () => {
           "Content-Type": "application/json",
         },
       },
-      getTicketDetails
+      (ticketData) => {
+        navigate("/admin/tickets/");
+      }
+    );
+  };
+
+  const saveMessageHandler = async (message, image) => {
+    if (!message) return;
+    console.log("1", message);
+
+    const formData = new FormData();
+    formData.append("message", message);
+    formData.append("userId", userId);
+    if (image) {
+      formData.append("image", image);
+    }
+
+    // SAVE MESSAGE
+    messageSendRequest(
+      {
+        url: `/techTickets/${ticketId}/ticketMessage`,
+        method: "POST",
+        formData: formData,
+      },
+      (messageData) => {
+        console.log("2", messageData);
+        // UPDATE SAVE MESSAGE TICKET LOGS
+        messageSendRequest(
+          {
+            url: `/techTickets/${ticketId}/ticketLog`,
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: {
+              message: "Replied to the ticket.",
+              userId,
+            },
+          },
+          (logData) => {
+            setTicketLogs((prevVal) => {
+              return [...prevVal, logData];
+            });
+          }
+        );
+      }
     );
   };
 
@@ -118,29 +163,38 @@ const TicketDetails = () => {
       {data && !isLoading && (
         <Box display="flex" flexWrap="wrap" margin="2rem" gap="2rem">
           {/* LEFT SIDE */}
-          <Box flexGrow="1" width={isNonMobile ? "32%" : "100%"} height="fit-content" backgroundColor={theme.palette.background.light} p="1rem" borderRadius="5px">
-            <Box display="flex" gap="1rem" alignItems="center">
-              <Box
-                component="img"
-                alt="profile"
-                src={serverAddress + "/" + data.user.profileImage}
-                crossOrigin="use-credentials"
-                height="32px"
-                width="32px"
-                borderRadius="50%"
-                sx={{ objectFit: "cover" }}
-              />
-              <Typography variant="h3">{data.title}</Typography>
+          <Box display="flex" flexDirection="column" gap="2rem" flexGrow="1" width={isNonMobile ? "32%" : "100%"}>
+            <Box height="fit-content" backgroundColor={theme.palette.background.light} p="1rem" borderRadius="5px">
+              <Box display="flex" gap="1rem" alignItems="center">
+                <Box
+                  component="img"
+                  alt="profile"
+                  src={serverAddress + "/" + data.user.profileImage}
+                  crossOrigin="use-credentials"
+                  height="32px"
+                  width="32px"
+                  borderRadius="50%"
+                  sx={{ objectFit: "cover" }}
+                />
+                <Typography variant="h3">{data.title}</Typography>
+              </Box>
+              <Box mt="2rem">
+                {data.messages[0] && (
+                  <Typography color={theme.palette.grey[200]} mb="1rem">
+                    {data.messages[0].message}
+                  </Typography>
+                )}
+                {data.messages[0] && data.messages[0].image.length > 0 && (
+                  <Box component="img" alt="ticket image" src={serverAddress + "/" + data.messages[0].image} crossOrigin="use-credentials" maxWidth="50%" sx={{ objectFit: "cover" }} />
+                )}
+              </Box>
             </Box>
-            <Box mt="2rem">
-              {data.messages[0] && (
-                <Typography color={theme.palette.grey[200]} mb="1rem">
-                  {data.messages[0].message}
-                </Typography>
-              )}
-              {data.messages[0] && data.messages[0].image.length > 0 && (
-                <Box component="img" alt="ticket image" src={serverAddress + "/" + data.messages[0].image} crossOrigin="use-credentials" maxWidth="100%" sx={{ objectFit: "cover" }} />
-              )}
+            {/* TEXT EDITOR */}
+            <Box>
+              <Typography variant="h3" mb="1rem">
+                Reply To Ticket
+              </Typography>
+              <TextEditor isLoading={messageIsLoading} saveMessage={saveMessageHandler} />
             </Box>
           </Box>
           {/* RIGHT SIDE */}
@@ -254,7 +308,9 @@ const TicketDetails = () => {
                       />
                       <Box>
                         <Typography color={theme.palette.grey[200]}>{l.message}</Typography>
-                        <Typography color={theme.palette.grey[200]}>{getDate(l.createdAt)}</Typography>
+                        <Typography color={theme.palette.grey[200]} fontSize="12px">
+                          {getDate(l.createdAt)}
+                        </Typography>
                       </Box>
                     </Box>
                     <Divider sx={{ borderColor: theme.palette.grey[700], mt: "1rem", mb: "1rem" }} />
