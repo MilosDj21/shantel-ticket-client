@@ -22,6 +22,7 @@ import Dashboard from "./pages/Dashboard";
 import ProtectedRoutes from "./components/ProtectedRoutes";
 import { authActions } from "./store/auth";
 import EditTicket from "./pages/admin/tech-ticket/EditTicket";
+import EditMessage from "./pages/admin/tech-ticket/EditMessage";
 
 const router = createBrowserRouter([
   {
@@ -58,6 +59,7 @@ const router = createBrowserRouter([
               { index: true, element: <AdminAllTickets /> },
               { path: "new", element: <AdminNewTicket /> },
               { path: "edit/:ticketId", element: <EditTicket /> },
+              { path: "message/edit/:messageId", element: <EditMessage /> },
               { path: ":ticketId", element: <AdminTicketDetails /> },
             ],
           },
