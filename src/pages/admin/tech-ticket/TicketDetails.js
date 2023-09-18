@@ -3,10 +3,12 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { Box, Typography, useTheme, useMediaQuery, Divider, Select, MenuItem, FormControl, IconButton, Tooltip } from "@mui/material";
 import { SettingsOutlined, Delete } from "@mui/icons-material";
+import parse from "html-react-parser";
 
 import useHttp from "../../../hooks/use-http";
 import FlexBetween from "../../../components/FlexBetween";
 import AlertDialog from "../../../components/AlertDialog";
+import TicketMessage from "../../../components/TicketMessage";
 import TextEditor from "../../../components/TextEditor";
 
 const serverAddress = process.env.ENVIRONMENT === "production" ? process.env.REACT_APP_PROD_BASE_URL : process.env.REACT_APP_DEV_BASE_URL;
@@ -34,11 +36,6 @@ const TicketDetails = () => {
     const minutes = String(date.getMinutes()).padStart(2, "0");
     const seconds = String(date.getSeconds()).padStart(2, "0");
     return `${day}-${month}-${year} ${hour}:${minutes}:${seconds}`;
-  };
-
-  const getHtmlFromString = (message) => {
-    const messageArray = [];
-    // TODO: SPLIT MESSAGE BY HTML TAGS AND RETURN ARRAY OF MESSAGES TO RENDER AS HTML PARAGRAPHS
   };
 
   // RETRIEVE INITIAL DATA FROM SERVER
@@ -117,7 +114,6 @@ const TicketDetails = () => {
 
   const saveMessageHandler = async (message, image) => {
     if (!message) return;
-    console.log("1", message);
 
     const formData = new FormData();
     formData.append("message", message);
@@ -134,7 +130,11 @@ const TicketDetails = () => {
         formData: formData,
       },
       (messageData) => {
-        console.log("2", messageData);
+        setData((prevVal) => {
+          const newVal = prevVal;
+          newVal.messages.push(messageData);
+          return newVal;
+        });
         // UPDATE SAVE MESSAGE TICKET LOGS
         messageSendRequest(
           {
@@ -179,16 +179,17 @@ const TicketDetails = () => {
                 <Typography variant="h3">{data.title}</Typography>
               </Box>
               <Box mt="2rem">
-                {data.messages[0] && (
-                  <Typography color={theme.palette.grey[200]} mb="1rem">
-                    {data.messages[0].message}
-                  </Typography>
-                )}
+                {data.messages[0] && parse(data.messages[0].message)}
                 {data.messages[0] && data.messages[0].image.length > 0 && (
                   <Box component="img" alt="ticket image" src={serverAddress + "/" + data.messages[0].image} crossOrigin="use-credentials" maxWidth="50%" sx={{ objectFit: "cover" }} />
                 )}
               </Box>
             </Box>
+            {/* MESSAGES */}
+            {data.messages.map((m, index) => {
+              if (index === 0) return null;
+              return <TicketMessage key={index} element={m} setData={setData} setTicketLogs={setTicketLogs} ticketId={ticketId} userId={userId} />;
+            })}
             {/* TEXT EDITOR */}
             <Box>
               <Typography variant="h3" mb="1rem">
@@ -307,7 +308,7 @@ const TicketDetails = () => {
                         sx={{ objectFit: "cover" }}
                       />
                       <Box>
-                        <Typography color={theme.palette.grey[200]}>{l.message}</Typography>
+                        {parse(l.message)}
                         <Typography color={theme.palette.grey[200]} fontSize="12px">
                           {getDate(l.createdAt)}
                         </Typography>

@@ -19,6 +19,7 @@
     "@tiptap/pm": "^2.1.9",
     "@tiptap/react": "^2.1.9",
     "@tiptap/starter-kit": "^2.1.9",
+    "html-react-parser": "^4.2.2",
     "mui-tiptap": "^1.8.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
