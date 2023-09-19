@@ -22,6 +22,7 @@ const TicketDetails = () => {
   const { isLoading, sendRequest } = useHttp();
   const { sendRequest: changeTicketStatus } = useHttp();
   const { isLoading: messageIsLoading, sendRequest: messageSendRequest } = useHttp();
+  const { sendRequest: updateTicketSendRequest } = useHttp();
   const [data, setData] = useState(null);
   const [ticketLogs, setTicketLogs] = useState(null);
   const [ticketStatus, setTicketStatus] = useState(null);
@@ -129,29 +130,45 @@ const TicketDetails = () => {
         method: "POST",
         formData: formData,
       },
-      (messageData) => {
-        setData((prevVal) => {
-          const newVal = prevVal;
-          newVal.messages.push(messageData);
-          return newVal;
+      async (messageData) => {
+        // CHANGE TICKET STATUS TO CLOSED AFTER ADMIN RESPONSE
+        await updateTicketSendRequest({
+          url: `/users/${userId}/techTickets`,
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: {
+            id: ticketId,
+            status: "Closed",
+          },
         });
         // UPDATE SAVE MESSAGE TICKET LOGS
-        messageSendRequest(
+        await updateTicketSendRequest({
+          url: `/techTickets/${ticketId}/ticketLog`,
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: {
+            message: "Replied to the ticket.",
+            userId,
+          },
+        });
+        // POPULATE DATA AFTER SAVING NEW MESSAGE
+        await updateTicketSendRequest(
           {
-            url: `/techTickets/${ticketId}/ticketLog`,
-            method: "POST",
+            url: `/techTickets/${ticketId}`,
+            method: "GET",
             headers: {
               "Content-Type": "application/json",
             },
-            body: {
-              message: "Replied to the ticket.",
-              userId,
-            },
           },
-          (logData) => {
-            setTicketLogs((prevVal) => {
-              return [...prevVal, logData];
-            });
+          (ticketData) => {
+            setData(ticketData);
+            setTicketStatus(ticketData.status);
+            setTicketLogs(ticketData.logs);
+            console.log(ticketData);
           }
         );
       }
@@ -188,7 +205,7 @@ const TicketDetails = () => {
             {/* MESSAGES */}
             {data.messages.map((m, index) => {
               if (index === 0) return null;
-              return <TicketMessage key={index} element={m} setData={setData} setTicketLogs={setTicketLogs} ticketId={ticketId} userId={userId} />;
+              return <TicketMessage key={index} element={m} setData={setData} setTicketLogs={setTicketLogs} ticketId={ticketId} userId={userId} enableModifyButtons={true} />;
             })}
             {/* TEXT EDITOR */}
             <Box>
