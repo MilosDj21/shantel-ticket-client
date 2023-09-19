@@ -76,10 +76,12 @@ const useHttp = () => {
           }
         }
         //If there is data in response send it to component
-        if (res.data) {
-          applyData(res.data);
-        } else {
-          applyData();
+        if (applyData) {
+          if (res.data) {
+            applyData(res.data);
+          } else {
+            applyData();
+          }
         }
       } catch (err) {
         setError(err.message || "Something went wrong!");
