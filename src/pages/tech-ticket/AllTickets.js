@@ -196,7 +196,18 @@ const AllTickets = () => {
           },
         }}
       >
-        <DataGrid loading={isLoading || !data} getRowId={(row) => row._id} rows={data || []} columns={columns} onRowClick={rowClickHandle} />
+        <DataGrid
+          loading={isLoading || !data}
+          getRowId={(row) => row._id}
+          rows={data || []}
+          columns={columns}
+          onRowClick={rowClickHandle}
+          initialState={{
+            sorting: {
+              sortModel: [{ field: "status", sort: "desc" }],
+            },
+          }}
+        />
       </Box>
     </Box>
   );
