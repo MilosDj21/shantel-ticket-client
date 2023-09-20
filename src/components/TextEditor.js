@@ -40,6 +40,9 @@ const TextEditor = ({ isLoading, saveMessage }) => {
         "& ::before": {
           color: `${theme.palette.grey[700]} !important`,
         },
+        "& .ProseMirror": {
+          wordWrap: "anywhere",
+        },
       }}
     >
       <RichTextEditor

@@ -58,7 +58,15 @@ const TicketMessage = ({ element, setData, setTicketLogs, ticketId, userId, enab
   };
 
   return (
-    <Box height="fit-content" backgroundColor={theme.palette.background.light} p="1rem" borderRadius="5px">
+    <Box
+      height="fit-content"
+      backgroundColor={theme.palette.background.light}
+      p="1rem"
+      borderRadius="5px"
+      sx={{
+        wordWrap: "anywhere",
+      }}
+    >
       <FlexBetween gap="1rem">
         <Box display="flex" gap="1rem" alignItems="center">
           <Box
