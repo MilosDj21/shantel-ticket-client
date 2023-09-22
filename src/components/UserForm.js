@@ -4,9 +4,12 @@ import { Lock, Person, Email, PhotoCamera, SupervisorAccount } from "@mui/icons-
 
 import FlexBetween from "./FlexBetween";
 import useHttp from "../hooks/use-http";
+import QRcodeDialog from "./QRcodeDialog";
 
 const UserForm = ({ method, userId = null }) => {
   const theme = useTheme();
+  const [showQrCodeModal, setShowQrCodeModal] = useState(false);
+  const [qrCode, setQrCode] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [firstName, setFirstName] = useState("");
@@ -80,7 +83,11 @@ const UserForm = ({ method, userId = null }) => {
       if (selectedRole) formData.append("roles", selectedRole);
     }
 
-    const saveUser = (userData) => {
+    const saveUser = (qrData) => {
+      if (!userId) {
+        setQrCode(qrData);
+        setShowQrCodeModal(true);
+      }
       setEmail("");
       setPassword("");
       setFirstName("");
@@ -256,6 +263,7 @@ const UserForm = ({ method, userId = null }) => {
           {isLoading ? "Loading..." : "Create"}
         </Button>
       </Box>
+      <QRcodeDialog open={showQrCodeModal} setOpen={setShowQrCodeModal} imgSource={qrCode} />
     </Box>
   );
 };

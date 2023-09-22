@@ -1,6 +1,6 @@
 import { useState, useEffect, Fragment } from "react";
 import { Box, InputBase, useTheme, Button } from "@mui/material";
-import { Lock, Person, AccountCircleRounded } from "@mui/icons-material";
+import { Lock, Person, AccountCircleRounded, Pin } from "@mui/icons-material";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
@@ -12,6 +12,7 @@ const Login = () => {
   const theme = useTheme();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [twoFaToken, setTwoFaToken] = useState("");
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const userId = useSelector((state) => state.userId);
@@ -40,7 +41,7 @@ const Login = () => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: { email, password },
+        body: { email, password, twoFaToken },
       },
       saveUser
     );
@@ -99,6 +100,27 @@ const Login = () => {
                 }}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+              />
+            </FlexBetween>
+            <FlexBetween backgroundColor={theme.palette.background.light} borderRadius="9px" gap="1rem" p="0.1rem 1.5rem">
+              <Pin
+                sx={{
+                  color: theme.palette.grey[700],
+                  fontSize: "30px",
+                }}
+              />
+              <InputBase
+                error
+                required
+                type="text"
+                placeholder="2 Factor Auth(6 Digit Code)"
+                sx={{
+                  color: theme.palette.grey[300],
+                  p: "0.2rem 0",
+                  fontSize: "18px",
+                }}
+                value={twoFaToken}
+                onChange={(e) => setTwoFaToken(e.target.value)}
               />
             </FlexBetween>
             <Button
