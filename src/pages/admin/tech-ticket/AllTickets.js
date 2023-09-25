@@ -139,8 +139,8 @@ const AllTickets = () => {
       },
     },
     {
-      field: "createdAt",
-      headerName: "Created At",
+      field: "updatedAt",
+      headerName: "Updated At",
       flex: 0.5,
       renderCell: (params) => {
         const date = new Date(params.value);
@@ -204,7 +204,7 @@ const AllTickets = () => {
           onRowClick={rowClickHandle}
           initialState={{
             sorting: {
-              sortModel: [{ field: "status", sort: "desc" }],
+              sortModel: [{ field: "updatedAt", sort: "desc" }],
             },
           }}
         />
