@@ -21,6 +21,7 @@ const TicketDetails = () => {
   const { ticketId } = useParams();
   const { isLoading, sendRequest } = useHttp();
   const { sendRequest: changeTicketStatus } = useHttp();
+  const { sendRequest: updateTicketSeenByAdmin } = useHttp();
   const { isLoading: messageIsLoading, sendRequest: messageSendRequest } = useHttp();
   const { sendRequest: updateTicketSendRequest } = useHttp();
   const [data, setData] = useState(null);
@@ -54,9 +55,47 @@ const TicketDetails = () => {
         setTicketStatus(ticketData.status);
         setTicketLogs(ticketData.logs);
         console.log(ticketData);
+
+        // WHEN ADMIN READS TICKET FOR THE FIRST TIME
+        if (!ticketData.seenByAdmin) {
+          updateTicketSeenByAdmin(
+            {
+              url: "/techTickets",
+              method: "PATCH",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: {
+                id: ticketId,
+                seenByAdmin: true,
+              },
+            },
+            (ticketData) => {
+              // UPDATE SEEN BY ADMIN TICKET LOGS
+              updateTicketSeenByAdmin(
+                {
+                  url: `/techTickets/${ticketId}/ticketLog`,
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                  body: {
+                    message: "Ticket was seen by admin",
+                    userId,
+                  },
+                },
+                (logData) => {
+                  setTicketLogs((prevVal) => {
+                    return [...prevVal, logData];
+                  });
+                }
+              );
+            }
+          );
+        }
       }
     );
-  }, [sendRequest, ticketId]);
+  }, [sendRequest, ticketId, updateTicketSeenByAdmin, userId]);
 
   const changeTicketStatusHandler = async (event) => {
     // CHANGE TICKET STATUS
@@ -306,9 +345,14 @@ const TicketDetails = () => {
               </FlexBetween>
             </Box>
             {/* TICKET HISTORY */}
-            <Box backgroundColor={theme.palette.background.light} p="1rem" borderRadius="5px" sx={{
-                wordWrap: 'anywhere'
-            }}>
+            <Box
+              backgroundColor={theme.palette.background.light}
+              p="1rem"
+              borderRadius="5px"
+              sx={{
+                wordWrap: "anywhere",
+              }}
+            >
               <Typography variant="h3" mb="2rem">
                 Ticket History
               </Typography>

@@ -2,11 +2,13 @@ import { Fragment, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { Box, Typography, useTheme, useMediaQuery, Divider } from "@mui/material";
+import { DoneAll } from "@mui/icons-material";
 import parse from "html-react-parser";
 
 import useHttp from "../../hooks/use-http";
 import TicketMessage from "../../components/TicketMessage";
 import TextEditor from "../../components/TextEditor";
+import FlexBetween from "../../components/FlexBetween";
 
 const serverAddress = process.env.ENVIRONMENT === "production" ? process.env.REACT_APP_PROD_BASE_URL : process.env.REACT_APP_DEV_BASE_URL;
 
@@ -114,19 +116,29 @@ const TicketDetails = () => {
           {/* LEFT SIDE */}
           <Box display="flex" flexDirection="column" gap="2rem" flexGrow="1" width={isNonMobile ? "32%" : "100%"}>
             <Box height="fit-content" backgroundColor={theme.palette.background.light} p="1rem" borderRadius="5px">
-              <Box display="flex" gap="1rem" alignItems="center">
-                <Box
-                  component="img"
-                  alt="profile"
-                  src={serverAddress + "/" + data.user.profileImage}
-                  crossOrigin="use-credentials"
-                  height="32px"
-                  width="32px"
-                  borderRadius="50%"
-                  sx={{ objectFit: "cover" }}
-                />
-                <Typography variant="h3">{data.title}</Typography>
-              </Box>
+              <FlexBetween>
+                <Box display="flex" gap="1rem" alignItems="center">
+                  <Box
+                    component="img"
+                    alt="profile"
+                    src={serverAddress + "/" + data.user.profileImage}
+                    crossOrigin="use-credentials"
+                    height="32px"
+                    width="32px"
+                    borderRadius="50%"
+                    sx={{ objectFit: "cover" }}
+                  />
+                  <Typography variant="h3">{data.title}</Typography>
+                </Box>
+                <Box>
+                  <DoneAll
+                    sx={{
+                      color: data.seenByAdmin ? theme.palette.primary.main : theme.palette.grey[700],
+                      fontSize: "30px",
+                    }}
+                  />
+                </Box>
+              </FlexBetween>
               <Box mt="2rem">
                 {data.messages[0] && parse(data.messages[0].message)}
                 {data.messages[0] && data.messages[0].image.length > 0 && (
