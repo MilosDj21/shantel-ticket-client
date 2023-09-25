@@ -16,6 +16,17 @@ const TicketMessage = ({ element, setData, setTicketLogs, ticketId, userId, enab
   const [openDialog, setOpenDialog] = useState(false);
   const { sendRequest } = useHttp();
 
+  const getDate = (dateStr) => {
+    const date = new Date(dateStr);
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear();
+    const hour = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+    const seconds = String(date.getSeconds()).padStart(2, "0");
+    return `${day}-${month}-${year} ${hour}:${minutes}:${seconds}`;
+  };
+
   const deleteMessageHandler = async () => {
     if (!enableModifyButtons) return;
     sendRequest(
@@ -115,6 +126,9 @@ const TicketMessage = ({ element, setData, setTicketLogs, ticketId, userId, enab
       </FlexBetween>
       {parse(element.message)}
       {element.image && <Box component="img" alt="message image" src={serverAddress + "/" + element.image} crossOrigin="use-credentials" maxWidth="50%" sx={{ objectFit: "cover" }} />}
+      <Box mt="2rem" display="flex" justifyContent="end">
+        <Typography fontSize="12px">Posted on: {getDate(element.createdAt)}</Typography>
+      </Box>
     </Box>
   );
 };
