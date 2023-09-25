@@ -306,7 +306,9 @@ const TicketDetails = () => {
               </FlexBetween>
             </Box>
             {/* TICKET HISTORY */}
-            <Box backgroundColor={theme.palette.background.light} p="1rem" borderRadius="5px">
+            <Box backgroundColor={theme.palette.background.light} p="1rem" borderRadius="5px" sx={{
+                wordWrap: 'anywhere'
+            }}>
               <Typography variant="h3" mb="2rem">
                 Ticket History
               </Typography>
