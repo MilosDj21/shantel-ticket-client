@@ -1,4 +1,4 @@
-import { HomeOutlined, Person, SupervisorAccount, Description } from "@mui/icons-material";
+import { HomeOutlined, Person, SupervisorAccount, Description, AttachMoney } from "@mui/icons-material";
 import { useCallback } from "react";
 
 const useSidebarItems = () => {
@@ -26,6 +26,26 @@ const useSidebarItems = () => {
         text: "New Ticket",
         icon: <Description />,
         link: "tickets/new",
+      },
+      {
+        text: "Bonus Tasks",
+        icon: null,
+        link: null,
+      },
+      {
+        text: "Open Bonus Tasks",
+        icon: <AttachMoney />,
+        link: "bonusTasks",
+      },
+      {
+        text: "My Bonus Tasks",
+        icon: <AttachMoney />,
+        link: "bonusTasks/my",
+      },
+      {
+        text: "New Bonus Task",
+        icon: <AttachMoney />,
+        link: "bonusTasks/new",
       },
     ];
     const adminItems = [

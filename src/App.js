@@ -23,6 +23,10 @@ import ProtectedRoutes from "./components/ProtectedRoutes";
 import { authActions } from "./store/auth";
 import EditTicket from "./pages/admin/tech-ticket/EditTicket";
 import EditMessage from "./pages/admin/tech-ticket/EditMessage";
+import OpenBonusTasks from "./pages/bonus-tasks/OpenBonusTasks";
+import NewBonusTasks from "./pages/bonus-tasks/NewBonusTasks";
+import MyBonusTasks from "./pages/bonus-tasks/MyBonusTasks";
+import BonusTaskDetails from "./pages/bonus-tasks/BonusTaskDetails";
 
 const router = createBrowserRouter([
   {
@@ -37,6 +41,16 @@ const router = createBrowserRouter([
           { index: true, element: <MyTickets /> },
           { path: "new", element: <NewTicket /> },
           { path: ":ticketId", element: <TicketDetails /> },
+        ],
+      },
+      {
+        path: "bonusTasks",
+        element: <Outlet />,
+        children: [
+          { index: true, element: <OpenBonusTasks /> },
+          { path: "my", element: <MyBonusTasks /> },
+          { path: "new", element: <NewBonusTasks /> },
+          { path: ":taskId", element: <BonusTaskDetails /> },
         ],
       },
       {

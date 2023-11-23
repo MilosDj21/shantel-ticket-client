@@ -91,6 +91,7 @@ const Sidebar = ({ drawerWidth, isSidebarOpen, setIsSidebarOpen, isNonMobile }) 
                         backgroundColor: active === link ? theme.palette.primary[400] : "transparent",
                         color: active === link ? theme.palette.primary[900] : theme.palette.grey[300],
                         ":hover": { color: theme.palette.primary.main, "& .MuiSvgIcon-root": { color: theme.palette.primary.main } },
+                        "& .MuiListItemIcon-root": { minWidth: "35px" },
                       }}
                     >
                       <ListItemIcon
