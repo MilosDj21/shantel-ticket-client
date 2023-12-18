@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import { Box, useTheme, Tooltip } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import { useNavigate } from "react-router-dom";
@@ -11,25 +12,29 @@ const serverAddress = process.env.ENVIRONMENT === "production" ? process.env.REA
 const AllTickets = () => {
   const theme = useTheme();
   const navigate = useNavigate();
+  const user = useSelector((state) => state);
   const [data, setData] = useState([]);
   const { isLoading, sendRequest } = useHttp();
   const [search, setSearch] = useState("");
 
   useEffect(() => {
-    const getTickets = (ticketsData) => {
-      setData(ticketsData);
-    };
-
-    sendRequest(
-      {
-        url: "/techTickets",
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
+    // TODO: Interval should be set only if user is TV where monitoring will be
+    const intervalId = setInterval(async () => {
+      sendRequest(
+        {
+          url: "/techTickets",
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
         },
-      },
-      getTickets
-    );
+        (ticketsData) => {
+          setData(ticketsData);
+          console.log(ticketsData);
+        }
+      );
+    }, 60000);
+    return () => clearInterval(intervalId);
   }, [sendRequest]);
 
   const searchInput = (event) => {
