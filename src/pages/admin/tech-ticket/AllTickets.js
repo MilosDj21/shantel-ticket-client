@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Box, useTheme } from "@mui/material";
+import { Box, useTheme, Tooltip } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import { useNavigate } from "react-router-dom";
 
@@ -103,16 +103,18 @@ const AllTickets = () => {
       flex: 0.2,
       renderCell: (params) => {
         return (
-          <Box
-            component="img"
-            alt="profile"
-            src={serverAddress + "/" + params.value.profileImage}
-            crossOrigin="use-credentials"
-            height="32px"
-            width="32px"
-            borderRadius="50%"
-            sx={{ objectFit: "cover" }}
-          />
+          <Tooltip title={params.value.firstName} placement="top" arrow>
+            <Box
+              component="img"
+              alt="profile"
+              src={serverAddress + "/" + params.value.profileImage}
+              crossOrigin="use-credentials"
+              height="32px"
+              width="32px"
+              borderRadius="50%"
+              sx={{ objectFit: "cover" }}
+            />
+          </Tooltip>
         );
       },
     },
@@ -123,16 +125,18 @@ const AllTickets = () => {
       renderCell: (params) => {
         const lastItem = params.value[params.value.length - 1];
         return lastItem ? (
-          <Box
-            component="img"
-            alt="profile"
-            src={serverAddress + "/" + lastItem.user.profileImage}
-            crossOrigin="use-credentials"
-            height="32px"
-            width="32px"
-            borderRadius="50%"
-            sx={{ objectFit: "cover" }}
-          />
+          <Tooltip title={lastItem.user.firstName} placement="top" arrow>
+            <Box
+              component="img"
+              alt="profile"
+              src={serverAddress + "/" + lastItem.user.profileImage}
+              crossOrigin="use-credentials"
+              height="32px"
+              width="32px"
+              borderRadius="50%"
+              sx={{ objectFit: "cover" }}
+            />
+          </Tooltip>
         ) : (
           ""
         );
