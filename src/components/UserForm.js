@@ -1,13 +1,16 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Box, InputBase, useTheme, Button, MenuItem, Select } from "@mui/material";
 import { Lock, Person, Email, PhotoCamera, SupervisorAccount } from "@mui/icons-material";
 
 import FlexBetween from "./FlexBetween";
 import useHttp from "../hooks/use-http";
 import QRcodeDialog from "./QRcodeDialog";
+import AlertDialog from "./AlertDialog";
 
 const UserForm = ({ method, userId = null }) => {
   const theme = useTheme();
+  const navigate = useNavigate();
   const [showQrCodeModal, setShowQrCodeModal] = useState(false);
   const [qrCode, setQrCode] = useState("");
   const [email, setEmail] = useState("");
@@ -18,6 +21,7 @@ const UserForm = ({ method, userId = null }) => {
   const [selectedRole, setSelectedRole] = useState("");
   const [roles, setRoles] = useState([]);
   const { isLoading, sendRequest } = useHttp();
+  const [openDialog, setOpenDialog] = useState(false);
 
   useEffect(() => {
     // GET ROLES FROM SERVER
@@ -83,26 +87,40 @@ const UserForm = ({ method, userId = null }) => {
       if (selectedRole) formData.append("roles", selectedRole);
     }
 
-    const saveUser = (qrData) => {
-      if (!userId) {
-        setQrCode(qrData);
-        setShowQrCodeModal(true);
-      }
-      setEmail("");
-      setPassword("");
-      setFirstName("");
-      setLastName("");
-      setProfileImage("");
-      setSelectedRole("");
-    };
-
     sendRequest(
       {
         url: "/users",
         method: method,
         formData: formData,
       },
-      saveUser
+      (qrData) => {
+        if (!userId) {
+          setQrCode(qrData);
+          setShowQrCodeModal(true);
+        }
+        setEmail("");
+        setPassword("");
+        setFirstName("");
+        setLastName("");
+        setProfileImage("");
+        setSelectedRole("");
+      }
+    );
+  };
+
+  const deleteUserHandler = async () => {
+    sendRequest(
+      {
+        url: `/users/${userId}`,
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      },
+      (userData) => {
+        console.log(userData);
+        navigate("/admin/users");
+      }
     );
   };
 
@@ -251,17 +269,35 @@ const UserForm = ({ method, userId = null }) => {
             ))}
           </Select>
         </FlexBetween>
-        <Button
-          type="submit"
-          variant="contained"
-          disabled={isLoading}
-          sx={{
-            p: "0.4rem 3.5rem",
-            fontSize: "16px",
-          }}
-        >
-          {isLoading ? "Loading..." : "Create"}
-        </Button>
+        <FlexBetween gap="2rem">
+          <Button
+            type="submit"
+            variant="contained"
+            disabled={isLoading}
+            sx={{
+              p: "0.4rem 3rem",
+              fontSize: "16px",
+            }}
+          >
+            {isLoading ? "Loading..." : userId ? "Update" : "Create"}
+          </Button>
+          {userId && (
+            <Box>
+              <Button
+                variant="contained"
+                disabled={isLoading}
+                onClick={() => setOpenDialog(true)}
+                sx={{
+                  p: "0.4rem 3rem",
+                  fontSize: "16px",
+                }}
+              >
+                {isLoading ? "Loading..." : "Delete"}
+              </Button>
+              <AlertDialog title="Delete User?" content="Are you sure you want to delete this user?" open={openDialog} setOpen={setOpenDialog} handleConfirm={deleteUserHandler} />
+            </Box>
+          )}
+        </FlexBetween>
       </Box>
       <QRcodeDialog open={showQrCodeModal} setOpen={setShowQrCodeModal} imgSource={qrCode} />
     </Box>
