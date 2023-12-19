@@ -62,7 +62,7 @@ const useHttp = () => {
 
         //If unauthorized, logout and redirect
         if (response.status === 401) {
-          localStorage.removeItem("userId");
+          localStorage.removeItem("user");
           dispatch(authActions.logout());
         }
 
