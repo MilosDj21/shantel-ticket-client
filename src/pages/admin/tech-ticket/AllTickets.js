@@ -12,14 +12,30 @@ const serverAddress = process.env.ENVIRONMENT === "production" ? process.env.REA
 const AllTickets = () => {
   const theme = useTheme();
   const navigate = useNavigate();
-  const user = useSelector((state) => state);
+  const userEmail = useSelector((state) => state.email);
   const [data, setData] = useState([]);
   const { isLoading, sendRequest } = useHttp();
   const [search, setSearch] = useState("");
 
   useEffect(() => {
     // TODO: Interval should be set only if user is TV where monitoring will be
-    const intervalId = setInterval(async () => {
+    let intervalId = null;
+    if (userEmail === "monitoringTv@aaa.sss") {
+      intervalId = setInterval(async () => {
+        sendRequest(
+          {
+            url: "/techTickets",
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          },
+          (ticketsData) => {
+            setData(ticketsData);
+          }
+        );
+      }, 60000);
+    } else {
       sendRequest(
         {
           url: "/techTickets",
@@ -30,12 +46,13 @@ const AllTickets = () => {
         },
         (ticketsData) => {
           setData(ticketsData);
-          console.log(ticketsData);
         }
       );
-    }, 60000);
-    return () => clearInterval(intervalId);
-  }, [sendRequest]);
+    }
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, [sendRequest, userEmail]);
 
   const searchInput = (event) => {
     setSearch(event.target.value);
