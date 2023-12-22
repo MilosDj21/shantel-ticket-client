@@ -78,7 +78,6 @@ const UserForm = ({ method, userId = null }) => {
     }
     //IF EXISTING USER CHECK WHAT TO SAVE
     else {
-      formData.append("id", userId);
       formData.append("email", email);
       formData.append("firstName", firstName);
       formData.append("lastName", lastName);
@@ -89,7 +88,7 @@ const UserForm = ({ method, userId = null }) => {
 
     sendRequest(
       {
-        url: "/users",
+        url: userId ? `/users/${userId}` : "/users",
         method: method,
         formData: formData,
       },

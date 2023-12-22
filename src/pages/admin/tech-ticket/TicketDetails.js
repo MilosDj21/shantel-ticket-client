@@ -60,13 +60,12 @@ const TicketDetails = () => {
         if (!ticketData.seenByAdmin) {
           updateTicketSeenByAdmin(
             {
-              url: "/techTickets",
+              url: `/techTickets/${ticketId}`,
               method: "PATCH",
               headers: {
                 "Content-Type": "application/json",
               },
               body: {
-                id: ticketId,
                 seenByAdmin: true,
               },
             },
@@ -101,13 +100,12 @@ const TicketDetails = () => {
     // CHANGE TICKET STATUS
     changeTicketStatus(
       {
-        url: "/techTickets",
+        url: `/techTickets/${ticketId}`,
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
         },
         body: {
-          id: ticketId,
           status: event.target.value,
         },
       },
@@ -172,13 +170,12 @@ const TicketDetails = () => {
       async (messageData) => {
         // CHANGE TICKET STATUS TO CLOSED AFTER ADMIN RESPONSE
         await updateTicketSendRequest({
-          url: `/users/${userId}/techTickets`,
+          url: `/users/${userId}/techTickets/${ticketId}`,
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
           },
           body: {
-            id: ticketId,
             status: "Closed",
           },
         });

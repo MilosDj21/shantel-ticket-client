@@ -70,13 +70,12 @@ const TicketDetails = () => {
       async (messageData) => {
         // CHANGE TICKET STATUS TO NEW AFTER USER RESPONSE
         await updateTicketSendRequest({
-          url: `/users/${userId}/techTickets`,
+          url: `/users/${userId}/techTickets/${ticketId}`,
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
           },
           body: {
-            id: ticketId,
             status: "New",
           },
         });
