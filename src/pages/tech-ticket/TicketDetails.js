@@ -51,7 +51,7 @@ const TicketDetails = () => {
   }, [sendRequest, ticketId, userId]);
 
   const saveMessageHandler = async (message, image) => {
-    if (!message) return;
+    if (!message || message === "<p></p>") return;
 
     const formData = new FormData();
     formData.append("message", message);
