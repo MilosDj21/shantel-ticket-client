@@ -1,4 +1,4 @@
-import { HomeOutlined, Person, SupervisorAccount, Description, AttachMoney } from "@mui/icons-material";
+import { HomeOutlined, Person, SupervisorAccount, Description, Assignment } from "@mui/icons-material";
 import { useCallback } from "react";
 
 const useSidebarItems = () => {
@@ -27,25 +27,22 @@ const useSidebarItems = () => {
         icon: <Description />,
         link: "tickets/new",
       },
+    ];
+    const salesItems = [
       {
-        text: "Bonus Tasks",
+        text: "Projects",
         icon: null,
         link: null,
       },
       {
-        text: "Open Bonus Tasks",
-        icon: <AttachMoney />,
-        link: "bonusTasks",
+        text: "All Projects",
+        icon: <Assignment />,
+        link: "projects",
       },
       {
-        text: "My Bonus Tasks",
-        icon: <AttachMoney />,
-        link: "bonusTasks/my",
-      },
-      {
-        text: "New Bonus Task",
-        icon: <AttachMoney />,
-        link: "bonusTasks/new",
+        text: "New Project",
+        icon: <Assignment />,
+        link: "projects/new",
       },
     ];
     const adminItems = [
@@ -83,13 +80,17 @@ const useSidebarItems = () => {
     finishedItems.push(...commonItems);
 
     if (rolesNames.includes("Super Admin")) {
+      finishedItems.push(...salesItems);
       finishedItems.push(...adminItems);
     } else if (rolesNames.includes("Admin")) {
+      finishedItems.push(...salesItems);
       finishedItems.push(...adminItems);
     } else if (rolesNames.includes("Amazon Leader")) {
     } else if (rolesNames.includes("Amazon")) {
-    } else if (rolesNames.includes("Manager Leader")) {
-    } else if (rolesNames.includes("Manager")) {
+    } else if (rolesNames.includes("Sales Leader")) {
+      finishedItems.push(...salesItems);
+    } else if (rolesNames.includes("Sales")) {
+      finishedItems.push(...salesItems);
     } else if (rolesNames.includes("Editor Leader")) {
     } else if (rolesNames.includes("Editor")) {
     } else if (rolesNames.includes("Copywrighter")) {
