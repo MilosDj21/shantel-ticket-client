@@ -46,6 +46,9 @@ const Sidebar = ({ drawerWidth, isSidebarOpen, setIsSidebarOpen, isNonMobile }) 
               borderWidth: isNonMobile ? 0 : "2px",
               width: drawerWidth,
             },
+            "& .css-1jz4rhn-MuiTypography-root": {
+              margin: "1.5rem 0 0.5rem 3rem",
+            },
           }}
         >
           <Box width="100%">
@@ -81,7 +84,15 @@ const Sidebar = ({ drawerWidth, isSidebarOpen, setIsSidebarOpen, isNonMobile }) 
                   );
                 }
                 return (
-                  <ListItem key={text} disablePadding>
+                  <ListItem
+                    key={text}
+                    disablePadding
+                    sx={{
+                      "& .MuiListItemButton-root": {
+                        padding: "4px 16px 4px 16px",
+                      },
+                    }}
+                  >
                     <ListItemButton
                       onClick={() => {
                         navigate("/" + link);
@@ -91,7 +102,7 @@ const Sidebar = ({ drawerWidth, isSidebarOpen, setIsSidebarOpen, isNonMobile }) 
                         backgroundColor: active === link ? theme.palette.primary[400] : "transparent",
                         color: active === link ? theme.palette.primary[900] : theme.palette.grey[300],
                         ":hover": { color: theme.palette.primary.main, "& .MuiSvgIcon-root": { color: theme.palette.primary.main } },
-                        "& .MuiListItemIcon-root": { minWidth: "35px" },
+                        "& .MuiListItemIcon-root": { minWidth: "30px" },
                       }}
                     >
                       <ListItemIcon
