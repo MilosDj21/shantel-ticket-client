@@ -9,6 +9,8 @@ import parse from "html-react-parser";
 import useHttp from "../../hooks/use-http";
 import TextEditor from "../../components/TextEditor";
 import FlexBetween from "../../components/FlexBetween";
+import TextOrInput from "../../components/TextOrInput";
+import TaskColumn from "../../components/TaskColumn";
 
 const serverAddress = process.env.ENVIRONMENT === "production" ? process.env.REACT_APP_PROD_BASE_URL : process.env.REACT_APP_DEV_BASE_URL;
 
@@ -33,6 +35,30 @@ const ProjectDetails = () => {
         },
       },
       (projectData) => {
+        const columnNames = new Set();
+        const columns = [];
+        for (const post of projectData.postRequests) {
+          for (const task of post.tasks) {
+            columnNames.add(task.group.title);
+          }
+        }
+        for (const colName of columnNames.values()) {
+          const col = {
+            _id: "",
+            title: colName,
+            tasks: [],
+          };
+          for (const post of projectData.postRequests) {
+            for (const task of post.tasks) {
+              if (colName === task.group.title) {
+                col._id = task.group._id;
+                col.tasks.push({ title: post.title, ...task });
+              }
+            }
+          }
+          columns.push(col);
+        }
+        projectData.columnArray = columns;
         console.log(projectData);
         setData(projectData);
       }
@@ -65,6 +91,10 @@ const ProjectDetails = () => {
 
   const buttonClickHandle = async (params) => {
     console.log(params);
+  };
+
+  const saveTitleHandler = async (text) => {
+    console.log(text);
   };
 
   const columns = [
@@ -187,6 +217,7 @@ const ProjectDetails = () => {
         }
         return buttonText.length > 0 ? (
           <Button
+            variant="contained"
             onClick={(e) => {
               e.stopPropagation();
               buttonClickHandle(params.id);
@@ -241,9 +272,7 @@ const ProjectDetails = () => {
             },
           }}
         >
-          <Typography variant="h3" mb="2rem">
-            {data.title}
-          </Typography>
+          {data && !isLoading && <TextOrInput fontSize="20px" textValue={data.title} callback={saveTitleHandler} />}
           <DataGrid
             loading={isLoading || !data}
             getRowId={(row) => row._id}
@@ -259,7 +288,13 @@ const ProjectDetails = () => {
         </Box>
       </Box>
       {/* TASKS DETAILS */}
-      {/* {data && !isLoading && <Box display="flex" m="2.5rem 2.5rem" backgroundColor="grey" height="20vh"></Box>} */}
+      {data && !isLoading && (
+        <Box display="flex" m="2.5rem 2.5rem">
+          {data.columnArray.map((c) => {
+            return <TaskColumn key={c._id} column={c} />;
+          })}
+        </Box>
+      )}
     </Fragment>
   );
 };
