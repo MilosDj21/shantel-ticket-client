@@ -22,7 +22,7 @@ const TextOrInput = ({ fontSize, textValue, callback }) => {
         },
         "& .MuiInputBase-input:focus": {
           border: `1px solid ${theme.palette.grey[800]}`,
-          borderRadius: "9px",
+          borderRadius: "5px",
         },
       }}
       value={text}

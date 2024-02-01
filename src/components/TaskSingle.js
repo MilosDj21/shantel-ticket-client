@@ -39,7 +39,7 @@ const TaskSingle = ({ title, msgNum, status }) => {
       <Box display="flex" justifyContent="space-between">
         <Typography
           sx={{
-            fontSize: "0.80rem",
+            fontSize: "0.60rem",
             p: "0.3rem 0.5rem",
             borderRadius: "20px",
             backgroundColor: statusBackground,
@@ -49,7 +49,7 @@ const TaskSingle = ({ title, msgNum, status }) => {
         </Typography>
         <Typography
           sx={{
-            fontSize: "0.80rem",
+            fontSize: "0.60rem",
             p: "0.2rem 0.5rem",
             backgroundColor: theme.palette.secondary[700],
             borderRadius: "20px 20px 20px 0",
