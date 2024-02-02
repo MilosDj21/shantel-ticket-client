@@ -3,14 +3,14 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { DataGrid } from "@mui/x-data-grid";
 import { Button, Box, Typography, useTheme, useMediaQuery, Divider, Select, MenuItem, FormControl, IconButton, Tooltip } from "@mui/material";
-import { SettingsOutlined, Delete } from "@mui/icons-material";
+import { Add } from "@mui/icons-material";
 import parse from "html-react-parser";
 
 import useHttp from "../../hooks/use-http";
-import TextEditor from "../../components/TextEditor";
 import FlexBetween from "../../components/FlexBetween";
 import TextOrInput from "../../components/TextOrInput";
 import TaskColumn from "../../components/TaskColumn";
+import NewPostDialog from "../../components/NewPostDialog";
 
 const serverAddress = process.env.ENVIRONMENT === "production" ? process.env.REACT_APP_PROD_BASE_URL : process.env.REACT_APP_DEV_BASE_URL;
 
@@ -25,8 +25,11 @@ const ProjectDetails = () => {
   const { sendRequest: changeProgressSendRequest } = useHttp();
   const { sendRequest: createGroupSendRequest } = useHttp();
   const { sendRequest: createTaskSendRequest } = useHttp();
+  const { sendRequest: createPostSendRequest } = useHttp();
+  const { sendRequest: createWebsiteSendRequest } = useHttp();
   const [data, setData] = useState("");
   const [search, setSearch] = useState("");
+  const [openDialog, setOpenDialog] = useState(false);
 
   // RETRIEVE INITIAL DATA FROM SERVER
   useEffect(() => {
@@ -47,6 +50,57 @@ const ProjectDetails = () => {
 
   const searchInput = (event) => {
     setSearch(event.target.value);
+  };
+
+  const confirmDialogHandle = async (postTitle, website, postCategory, anchor, link, urgency, wordNum, clientHasText) => {
+    // TODO: treba da se implementira da cuva prvo sajt, i onda taj id od sajta da se ubaci u post
+    // createWebsiteSendRequest(
+    //   {
+    //     url: `/websites`,
+    //     method: "POST",
+    //     headers: {
+    //       "Content-Type": "application/json",
+    //     },
+    //     body: {
+    //       title: postTitle,
+    //       website,
+    //       postCategory,
+    //       anchor,
+    //       clientPaidLink: link,
+    //       urgencyLevel: urgency,
+    //       wordNum,
+    //       project: projectId,
+    //       clientHasText,
+    //     },
+    //   },
+    //   (postData) => {
+    //     console.log("post:", postData);
+    //   }
+    // );
+    // createPostSendRequest(
+    //   {
+    //     url: `/postRequests`,
+    //     method: "POST",
+    //     headers: {
+    //       "Content-Type": "application/json",
+    //     },
+    //     body: {
+    //       title: postTitle,
+    //       website,
+    //       postCategory,
+    //       anchor,
+    //       clientPaidLink: link,
+    //       urgencyLevel: urgency,
+    //       wordNum,
+    //       project: projectId,
+    //       clientHasText,
+    //     },
+    //   },
+    //   (postData) => {
+    //     console.log("post:", postData);
+    //   }
+    // );
+    console.log(postTitle, website, postCategory, anchor, link, urgency, wordNum, clientHasText);
   };
 
   const searchHandle = async () => {
@@ -349,7 +403,33 @@ const ProjectDetails = () => {
 
   return (
     <Fragment>
-      <Box m="2.5rem 2.5rem">
+      <Box m="2.5rem">
+        {data && !isLoading && (
+          <Box display="flex">
+            <TextOrInput fontSize="20px" textValue={data.title} callback={saveTitleHandler} />
+            <Tooltip title="Add new post" placement="top" arrow>
+              <IconButton
+                onClick={() => {
+                  setOpenDialog(true);
+                }}
+              >
+                <Add
+                  sx={{
+                    color: theme.palette.grey.main,
+                    fontSize: "30px",
+                    border: `1px solid ${theme.palette.grey.main}`,
+                    borderRadius: "5px",
+                    ":hover": {
+                      color: theme.palette.grey[900],
+                      backgroundColor: theme.palette.grey.main,
+                    },
+                  }}
+                />
+              </IconButton>
+            </Tooltip>
+            <NewPostDialog title="Add New Post" content="Create New Post" open={openDialog} setOpen={setOpenDialog} handleConfirm={confirmDialogHandle} />
+          </Box>
+        )}
         <Box
           height="55vh"
           sx={{
@@ -387,7 +467,6 @@ const ProjectDetails = () => {
             },
           }}
         >
-          {data && !isLoading && <TextOrInput fontSize="20px" textValue={data.title} callback={saveTitleHandler} />}
           <DataGrid
             loading={isLoading || !data}
             getRowId={(row) => row._id}
@@ -404,7 +483,7 @@ const ProjectDetails = () => {
       </Box>
       {/* TASKS DETAILS */}
       {data && !isLoading && (
-        <Box display="flex" m="2.5rem 2.5rem">
+        <Box display="flex" m="2.5rem">
           {data.groups.map((c) => {
             return <TaskColumn key={c._id} column={c} />;
           })}
