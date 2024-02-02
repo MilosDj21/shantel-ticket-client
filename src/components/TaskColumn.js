@@ -31,9 +31,9 @@ const TaskColumn = ({ column }) => {
     <Box
       sx={{
         maxWidth: "20%",
-        mt: "2rem",
+        // mt: "2rem",
         p: "0.4rem 0.7rem",
-        borderRadius: "5px",
+        borderRadius: "9px",
         ":hover": {
           border: `1px solid ${theme.palette.grey[800]}`,
         },

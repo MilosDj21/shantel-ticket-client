@@ -26,7 +26,7 @@ const TaskSingle = ({ title, msgNum, status }) => {
         p: "0.4rem",
         m: "0.4rem 0",
         cursor: "pointer",
-        borderRadius: "5px",
+        borderRadius: "9px",
         border: `1px solid ${theme.palette.grey[800]}`,
         ":hover": {
           borderColor: theme.palette.grey[700],

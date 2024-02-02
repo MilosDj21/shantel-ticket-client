@@ -18,11 +18,11 @@ const TextOrInput = ({ fontSize, textValue, callback }) => {
         },
         "& .MuiInputBase-input:hover": {
           border: `1px solid ${theme.palette.grey[800]}`,
-          borderRadius: "5px",
+          borderRadius: "9px",
         },
         "& .MuiInputBase-input:focus": {
           border: `1px solid ${theme.palette.grey[800]}`,
-          borderRadius: "5px",
+          borderRadius: "9px",
         },
       }}
       value={text}
