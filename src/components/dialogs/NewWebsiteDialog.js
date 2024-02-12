@@ -59,7 +59,7 @@ const NewWebsiteDialog = ({ title, open, setOpen, handleConfirm }) => {
                 error
                 required
                 type="text"
-                placeholder="Title"
+                placeholder="Url"
                 sx={{
                   color: theme.palette.grey[300],
                   p: "0.2rem 0",
