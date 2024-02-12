@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, useTheme, Slide, InputBase, Typography, FormControl, Select, MenuItem } from "@mui/material";
-import { Title, Language } from "@mui/icons-material";
+import { Title } from "@mui/icons-material";
 
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
@@ -73,7 +73,7 @@ const NewWebsiteDialog = ({ title, open, setOpen, handleConfirm }) => {
 
             {/* Category */}
             <Box backgroundColor={theme.palette.background.light} display="flex" alignItems="center" borderRadius="9px" gap="1rem" p="0.1rem 1.5rem" width="100%">
-              <Language
+              <Title
                 sx={{
                   color: theme.palette.grey[700],
                   fontSize: "30px",
@@ -125,6 +125,8 @@ const NewWebsiteDialog = ({ title, open, setOpen, handleConfirm }) => {
         >
           <Button
             onClick={() => {
+              setWebsiteUrl("");
+              setWebsiteCategory("Regularan");
               setOpen(false);
             }}
             sx={{
@@ -136,6 +138,8 @@ const NewWebsiteDialog = ({ title, open, setOpen, handleConfirm }) => {
           <Button
             onClick={() => {
               handleConfirm(websiteUrl, websiteCategory);
+              setWebsiteUrl("");
+              setWebsiteCategory("Regularan");
             }}
             autoFocus
           >
