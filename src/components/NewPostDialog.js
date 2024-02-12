@@ -8,7 +8,7 @@ const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
 });
 
-const NewPostDialog = ({ title, content, open, setOpen, handleConfirm }) => {
+const NewPostDialog = ({ title, open, setOpen, handleConfirm }) => {
   const theme = useTheme();
   const { isLoading, error, sendRequest } = useHttp();
   const { sendRequest: newWebsiteSendRequest } = useHttp();
@@ -82,20 +82,15 @@ const NewPostDialog = ({ title, content, open, setOpen, handleConfirm }) => {
         open={open}
         onClose={() => setOpen(false)}
         aria-labelledby="alert-dialog-title"
-        // aria-describedby="alert-dialog-description"
         fullWidth
         maxWidth="md"
         TransitionComponent={Transition}
         sx={{
-          "& .MuiDialog-container": {
-            // justifyContent: "end",
-          },
+          "& .MuiDialog-container": {},
         }}
         PaperProps={{
           sx: {
             borderRadius: "9px",
-            // height: "100vh",
-            // m: "0",
           },
         }}
       >
@@ -116,9 +111,6 @@ const NewPostDialog = ({ title, content, open, setOpen, handleConfirm }) => {
             backgroundColor: theme.palette.background.default,
           }}
         >
-          {/* <DialogContentText color={theme.palette.grey[200]} id="alert-dialog-description">
-            {content}
-          </DialogContentText> */}
           <Box display="flex" flexDirection="column" alignItems="center" gap="1.5rem" p="3rem 3rem 3rem 3rem" backgroundColor="rgba(17, 18, 20, 0.3)" borderRadius="9px" width="100%">
             {/* Title */}
             <Box backgroundColor={theme.palette.background.light} display="flex" alignItems="center" borderRadius="9px" gap="1rem" p="0.1rem 1.5rem" width="100%">
@@ -384,7 +376,6 @@ const NewPostDialog = ({ title, content, open, setOpen, handleConfirm }) => {
           <Button
             onClick={() => {
               handleConfirm(postTitle, website, postCategory, anchor, link, urgency, wordNum, clientHasText);
-              // setOpen(false);
             }}
             autoFocus
           >
