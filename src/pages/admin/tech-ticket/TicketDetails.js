@@ -7,7 +7,7 @@ import parse from "html-react-parser";
 
 import useHttp from "../../../hooks/use-http";
 import FlexBetween from "../../../components/FlexBetween";
-import AlertDialog from "../../../components/AlertDialog";
+import AlertDialog from "../../../components/dialogs/AlertDialog";
 import TicketMessage from "../../../components/TicketMessage";
 import TextEditor from "../../../components/TextEditor";
 

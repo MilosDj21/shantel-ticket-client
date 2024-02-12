@@ -6,7 +6,7 @@ import parse from "html-react-parser";
 
 import useHttp from "../hooks/use-http";
 import FlexBetween from "./FlexBetween";
-import AlertDialog from "./AlertDialog";
+import AlertDialog from "./dialogs/AlertDialog";
 
 const serverAddress = process.env.ENVIRONMENT === "production" ? process.env.REACT_APP_PROD_BASE_URL : process.env.REACT_APP_DEV_BASE_URL;
 

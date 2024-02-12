@@ -5,8 +5,8 @@ import { Lock, Person, Email, PhotoCamera, SupervisorAccount } from "@mui/icons-
 
 import FlexBetween from "./FlexBetween";
 import useHttp from "../hooks/use-http";
-import QRcodeDialog from "./QRcodeDialog";
-import AlertDialog from "./AlertDialog";
+import QRcodeDialog from "./dialogs/QRcodeDialog";
+import AlertDialog from "./dialogs/AlertDialog";
 
 const UserForm = ({ method, userId = null }) => {
   const theme = useTheme();
