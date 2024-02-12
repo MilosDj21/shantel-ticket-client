@@ -1,6 +1,8 @@
-import React, { useState } from "react";
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, useTheme, Slide, InputBase, Typography, FormControl, Select, MenuItem } from "@mui/material";
-import { Title, Language, Anchor, Link, AccessTime, Article } from "@mui/icons-material";
+import React, { useState, useEffect } from "react";
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, useTheme, Slide, InputBase, Typography, FormControl, Select, MenuItem } from "@mui/material";
+import { Title, Language, Anchor, Link, AccessTime, Numbers, Article } from "@mui/icons-material";
+import useHttp from "../hooks/use-http";
+import NewWebsiteDialog from "./NewWebsiteDialog";
 
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
@@ -8,14 +10,71 @@ const Transition = React.forwardRef(function Transition(props, ref) {
 
 const NewPostDialog = ({ title, content, open, setOpen, handleConfirm }) => {
   const theme = useTheme();
+  const { isLoading, error, sendRequest } = useHttp();
+  const { sendRequest: newWebsiteSendRequest } = useHttp();
   const [postTitle, setPostTitle] = useState("");
-  const [website, setWebsite] = useState("");
+  const [websiteList, setWebsiteList] = useState(null);
+  const [website, setWebsite] = useState("Pick Website");
   const [anchor, setAnchor] = useState("");
   const [link, setLink] = useState("");
   const [urgency, setUrgency] = useState("");
   const [postCategory, setPostCategory] = useState("");
   const [wordNum, setWordNum] = useState("");
   const [clientHasText, setClientHasText] = useState(false);
+  const [openWebsiteDialog, setOpenWebsiteDialog] = useState(false);
+
+  useEffect(() => {
+    sendRequest(
+      {
+        url: "/websites",
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      },
+      (websiteData) => {
+        console.log(websiteData);
+        setWebsiteList(websiteData);
+      }
+    );
+  }, [sendRequest]);
+
+  const selectWebsiteHandler = (event) => {
+    if (event.target.value === "addnew") {
+      setOpenWebsiteDialog(true);
+      setWebsite("Pick Website");
+    } else {
+      setWebsite(event.target.value);
+    }
+  };
+
+  const confirmWebsiteDialogHandler = (url, category) => {
+    const trimmed = url.trim();
+    if (trimmed.length === 0) return;
+    const lastChar = trimmed.substring(trimmed.length - 1);
+    const filteredUrl = lastChar === "/" ? trimmed.substring(0, trimmed.length - 1) : trimmed;
+    newWebsiteSendRequest(
+      {
+        url: "/websites",
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: {
+          url: filteredUrl,
+          category,
+        },
+      },
+      (websiteData) => {
+        console.log(websiteData);
+        setWebsiteList((prevVal) => {
+          return [websiteData, ...prevVal];
+        });
+        setWebsite(websiteData._id);
+      }
+    );
+    setOpenWebsiteDialog(false);
+  };
 
   return (
     <Box>
@@ -93,20 +152,52 @@ const NewPostDialog = ({ title, content, open, setOpen, handleConfirm }) => {
                   fontSize: "30px",
                 }}
               />
-              <InputBase
-                error
-                required
-                type="text"
-                placeholder="Website"
+              <Typography
                 sx={{
-                  color: theme.palette.grey[300],
+                  color: theme.palette.grey[700],
                   p: "0.2rem 0",
                   fontSize: "18px",
-                  width: "100%",
                 }}
-                value={website}
-                onChange={(e) => setWebsite(e.target.value)}
-              />
+              >
+                Website
+              </Typography>
+              <FormControl
+                variant="standard"
+                sx={{
+                  "& .MuiFormControl-root": {
+                    width: "100%",
+                  },
+                }}
+              >
+                <Select
+                  value={website}
+                  onChange={(event) => selectWebsiteHandler(event)}
+                  sx={{
+                    "::before": {
+                      borderBottom: `1px solid ${theme.palette.grey[200]}`,
+                    },
+                    color: theme.palette.grey[500],
+                    "& .MuiSvgIcon-root": {
+                      color: theme.palette.grey[200],
+                    },
+                  }}
+                >
+                  <MenuItem value="Pick Website" disabled>
+                    Pick Website
+                  </MenuItem>
+                  <MenuItem value="addnew">Add New</MenuItem>
+                  {!isLoading &&
+                    !error &&
+                    websiteList &&
+                    websiteList.map((w) => {
+                      return (
+                        <MenuItem key={w._id} value={w._id}>
+                          {w.url}
+                        </MenuItem>
+                      );
+                    })}
+                </Select>
+              </FormControl>
             </Box>
 
             {/* Post Category */}
@@ -207,7 +298,7 @@ const NewPostDialog = ({ title, content, open, setOpen, handleConfirm }) => {
 
             {/* Word Num */}
             <Box backgroundColor={theme.palette.background.light} display="flex" alignItems="center" borderRadius="9px" gap="1rem" p="0.1rem 1.5rem" width="100%">
-              <Language
+              <Numbers
                 sx={{
                   color: theme.palette.grey[700],
                   fontSize: "30px",
@@ -239,7 +330,7 @@ const NewPostDialog = ({ title, content, open, setOpen, handleConfirm }) => {
               />
               <Typography
                 sx={{
-                  color: theme.palette.grey[500],
+                  color: theme.palette.grey[700],
                   p: "0.2rem 0",
                   fontSize: "18px",
                 }}
@@ -261,7 +352,7 @@ const NewPostDialog = ({ title, content, open, setOpen, handleConfirm }) => {
                     "::before": {
                       borderBottom: `1px solid ${theme.palette.grey[200]}`,
                     },
-                    color: theme.palette.grey[200],
+                    color: theme.palette.grey[500],
                     "& .MuiSvgIcon-root": {
                       color: theme.palette.grey[200],
                     },
@@ -301,6 +392,7 @@ const NewPostDialog = ({ title, content, open, setOpen, handleConfirm }) => {
           </Button>
         </DialogActions>
       </Dialog>
+      <NewWebsiteDialog title="Add New Website" open={openWebsiteDialog} setOpen={setOpenWebsiteDialog} handleConfirm={confirmWebsiteDialogHandler} />
     </Box>
   );
 };
