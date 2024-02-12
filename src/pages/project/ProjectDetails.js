@@ -10,7 +10,7 @@ import useHttp from "../../hooks/use-http";
 import FlexBetween from "../../components/FlexBetween";
 import TextOrInput from "../../components/TextOrInput";
 import TaskColumn from "../../components/TaskColumn";
-import NewPostDialog from "../../components/NewPostDialog";
+import NewPostDialog from "../../components/dialogs/NewPostDialog";
 
 const serverAddress = process.env.ENVIRONMENT === "production" ? process.env.REACT_APP_PROD_BASE_URL : process.env.REACT_APP_DEV_BASE_URL;
 
@@ -26,7 +26,6 @@ const ProjectDetails = () => {
   const { sendRequest: createGroupSendRequest } = useHttp();
   const { sendRequest: createTaskSendRequest } = useHttp();
   const { sendRequest: createPostSendRequest } = useHttp();
-  const { sendRequest: createWebsiteSendRequest } = useHttp();
   const [data, setData] = useState("");
   const [search, setSearch] = useState("");
   const [openDialog, setOpenDialog] = useState(false);
@@ -48,79 +47,36 @@ const ProjectDetails = () => {
     );
   }, [sendRequest, projectId]);
 
-  const searchInput = (event) => {
-    setSearch(event.target.value);
-  };
-
   const confirmDialogHandle = async (postTitle, website, postCategory, anchor, link, urgency, wordNum, clientHasText) => {
     // TODO: treba da se implementira da cuva prvo sajt, i onda taj id od sajta da se ubaci u post
-    // createWebsiteSendRequest(
-    //   {
-    //     url: `/websites`,
-    //     method: "POST",
-    //     headers: {
-    //       "Content-Type": "application/json",
-    //     },
-    //     body: {
-    //       title: postTitle,
-    //       website,
-    //       postCategory,
-    //       anchor,
-    //       clientPaidLink: link,
-    //       urgencyLevel: urgency,
-    //       wordNum,
-    //       project: projectId,
-    //       clientHasText,
-    //     },
-    //   },
-    //   (postData) => {
-    //     console.log("post:", postData);
-    //   }
-    // );
-    // createPostSendRequest(
-    //   {
-    //     url: `/postRequests`,
-    //     method: "POST",
-    //     headers: {
-    //       "Content-Type": "application/json",
-    //     },
-    //     body: {
-    //       title: postTitle,
-    //       website,
-    //       postCategory,
-    //       anchor,
-    //       clientPaidLink: link,
-    //       urgencyLevel: urgency,
-    //       wordNum,
-    //       project: projectId,
-    //       clientHasText,
-    //     },
-    //   },
-    //   (postData) => {
-    //     console.log("post:", postData);
-    //   }
-    // );
-    console.log(postTitle, website, postCategory, anchor, link, urgency, wordNum, clientHasText);
-  };
-
-  const searchHandle = async () => {
-    console.log(search);
-    sendRequest(
+    createPostSendRequest(
       {
-        url: search ? `/postTasks/search/${search}` : "/postTasks",
-        method: "GET",
+        url: `/postRequests`,
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
+        body: {
+          title: postTitle,
+          website,
+          postCategory,
+          anchor,
+          clientPaidLink: link,
+          urgencyLevel: urgency,
+          wordNum,
+          project: projectId,
+          clientHasText,
+        },
       },
-      (tasksData) => {
-        // setData(tasksData);
+      (postData) => {
+        console.log("post:", postData);
       }
     );
+    console.log(postTitle, website, postCategory, anchor, link, urgency, wordNum, clientHasText);
   };
 
   const rowClickHandle = async (params) => {
-    navigate(`/postRequests/${params.id}`);
+    // navigate(`/postRequests/${params.id}`);
   };
 
   const buttonClickHandle = async (params) => {
@@ -427,7 +383,7 @@ const ProjectDetails = () => {
                 />
               </IconButton>
             </Tooltip>
-            <NewPostDialog title="Add New Post" content="Create New Post" open={openDialog} setOpen={setOpenDialog} handleConfirm={confirmDialogHandle} />
+            <NewPostDialog title="Add New Post" open={openDialog} setOpen={setOpenDialog} handleConfirm={confirmDialogHandle} />
           </Box>
         )}
         <Box
