@@ -19,8 +19,10 @@ import {
   IconButton,
 } from "@mui/material";
 import { Title, Language, Anchor, Link, AccessTime, Numbers, Article, Add } from "@mui/icons-material";
+
 import useHttp from "../../hooks/use-http";
 import NewWebsiteDialog from "./NewWebsiteDialog";
+import NewClientLinkDialog from "./NewClientLinkDialog";
 
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
@@ -28,26 +30,35 @@ const Transition = React.forwardRef(function Transition(props, ref) {
 
 const NewPostDialog = ({ title, open, setOpen, handleConfirm }) => {
   const theme = useTheme();
-  const { isLoading, error, sendRequest } = useHttp();
+  const { isLoading: getWebsitesIsLoading, error: getWebsitesError, sendRequest: getWebsitesSendRequest } = useHttp();
   const { sendRequest: newWebsiteSendRequest } = useHttp();
+  const { isLoading: getLinksSendIsLoading, error: getLinksSendError, sendRequest: getLinksSendRequest } = useHttp();
+  const { sendRequest: newLinkSendRequest } = useHttp();
   const [postTitle, setPostTitle] = useState("");
-  const [websiteList, setWebsiteList] = useState(null);
   const [website, setWebsite] = useState(null);
+  const [websiteList, setWebsiteList] = useState(null);
   const [anchor, setAnchor] = useState("");
-  const [link, setLink] = useState("");
+  const [link, setLink] = useState(null);
+  const [linkList, setLinkList] = useState(null);
   const [urgency, setUrgency] = useState("");
-  const [postCategory, setPostCategory] = useState("");
+  const [postCategory, setPostCategory] = useState("Placeni");
   const [wordNum, setWordNum] = useState("");
   const [clientHasText, setClientHasText] = useState(false);
   const [openWebsiteDialog, setOpenWebsiteDialog] = useState(false);
+  const [openLinkDialog, setOpenLinkDialog] = useState(false);
 
-  const defaultAutocompleteProps = {
+  const websiteAutocompleteProps = {
     options: websiteList,
     getOptionLabel: (option) => option.url,
   };
 
+  const linkAutocompleteProps = {
+    options: linkList,
+    getOptionLabel: (option) => option.url,
+  };
+
   useEffect(() => {
-    sendRequest(
+    getWebsitesSendRequest(
       {
         url: "/websites",
         method: "GET",
@@ -60,7 +71,20 @@ const NewPostDialog = ({ title, open, setOpen, handleConfirm }) => {
         setWebsiteList(websiteData);
       }
     );
-  }, [sendRequest]);
+    getLinksSendRequest(
+      {
+        url: "/clientLinks",
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      },
+      (linksData) => {
+        console.log("links", linksData);
+        setLinkList(linksData);
+      }
+    );
+  }, [getWebsitesSendRequest, getLinksSendRequest]);
 
   const confirmWebsiteDialogHandler = (url, category) => {
     const trimmed = url.trim();
@@ -88,6 +112,34 @@ const NewPostDialog = ({ title, open, setOpen, handleConfirm }) => {
       }
     );
     setOpenWebsiteDialog(false);
+  };
+
+  const confirmLinkDialogHandler = (url, client) => {
+    const trimmed = url.trim();
+    if (trimmed.length === 0 || !client) return;
+    const lastChar = trimmed.substring(trimmed.length - 1);
+    const filteredUrl = lastChar === "/" ? trimmed.substring(0, trimmed.length - 1) : trimmed;
+    newLinkSendRequest(
+      {
+        url: "/clientLinks",
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: {
+          url: filteredUrl,
+          client: client._id,
+        },
+      },
+      (linkData) => {
+        console.log(linkData);
+        setLinkList((prevVal) => {
+          return [linkData, ...prevVal];
+        });
+        setLink(linkData);
+      }
+    );
+    setOpenLinkDialog(false);
   };
 
   return (
@@ -168,9 +220,9 @@ const NewPostDialog = ({ title, open, setOpen, handleConfirm }) => {
                 >
                   Website
                 </Typography>
-                {!isLoading && !error && websiteList && (
+                {!getWebsitesIsLoading && !getWebsitesError && websiteList && (
                   <Autocomplete
-                    {...defaultAutocompleteProps}
+                    {...websiteAutocompleteProps}
                     value={website}
                     onChange={(event, newValue) => {
                       setWebsite(newValue);
@@ -219,27 +271,50 @@ const NewPostDialog = ({ title, open, setOpen, handleConfirm }) => {
             </Box>
 
             {/* Post Category */}
-            <Box backgroundColor={theme.palette.background.light} display="flex" alignItems="center" borderRadius="9px" gap="1rem" p="0.1rem 1.5rem" width="100%">
+            <Box display="flex" alignItems="center" backgroundColor={theme.palette.background.light} borderRadius="9px" gap="1rem" p="0.3rem 1.5rem" width="100%">
               <Title
                 sx={{
                   color: theme.palette.grey[700],
                   fontSize: "30px",
                 }}
               />
-              <InputBase
-                error
-                required
-                type="text"
-                placeholder="Post Category"
+              <Typography
                 sx={{
-                  color: theme.palette.grey[300],
+                  color: theme.palette.grey[700],
                   p: "0.2rem 0",
                   fontSize: "18px",
-                  width: "100%",
                 }}
-                value={postCategory}
-                onChange={(e) => setPostCategory(e.target.value)}
-              />
+              >
+                Post Type
+              </Typography>
+              <FormControl
+                variant="standard"
+                sx={{
+                  "& .MuiFormControl-root": {
+                    width: "100%",
+                  },
+                }}
+              >
+                <Select
+                  value={postCategory}
+                  onChange={(event) => setPostCategory(event.target.value)}
+                  sx={{
+                    "::before": {
+                      borderBottom: `1px solid ${theme.palette.grey[200]}`,
+                    },
+                    color: theme.palette.grey[500],
+                    "& .MuiSvgIcon-root": {
+                      color: theme.palette.grey[200],
+                    },
+                  }}
+                >
+                  <MenuItem value="Placeni">Placeni</MenuItem>
+                  <MenuItem value="Insercija">Insercija</MenuItem>
+                  <MenuItem value="Wayback">Wayback</MenuItem>
+                  <MenuItem value="Redovni">Redovni</MenuItem>
+                  <MenuItem value="Ostalo">Ostalo</MenuItem>
+                </Select>
+              </FormControl>
             </Box>
 
             {/* Anchor */}
@@ -267,27 +342,83 @@ const NewPostDialog = ({ title, open, setOpen, handleConfirm }) => {
             </Box>
 
             {/* Link */}
-            <Box backgroundColor={theme.palette.background.light} display="flex" alignItems="center" borderRadius="9px" gap="1rem" p="0.1rem 1.5rem" width="100%">
-              <Link
-                sx={{
-                  color: theme.palette.grey[700],
-                  fontSize: "30px",
-                }}
-              />
-              <InputBase
-                error
-                required
-                type="text"
-                placeholder="Link"
-                sx={{
-                  color: theme.palette.grey[300],
-                  p: "0.2rem 0",
-                  fontSize: "18px",
-                  width: "100%",
-                }}
-                value={link}
-                onChange={(e) => setLink(e.target.value)}
-              />
+            <Box backgroundColor={theme.palette.background.light} display="flex" alignItems="center" justifyContent="space-between" borderRadius="9px" p="0.1rem 1.5rem" width="100%">
+              <Box display="flex" alignItems="center" borderRadius="9px" gap="1rem" width="60%">
+                <Link
+                  sx={{
+                    color: theme.palette.grey[700],
+                    fontSize: "30px",
+                  }}
+                />
+                <Typography
+                  sx={{
+                    color: theme.palette.grey[700],
+                    p: "0.2rem 0",
+                    fontSize: "18px",
+                  }}
+                >
+                  Client Link
+                </Typography>
+                {!getLinksSendIsLoading && !getLinksSendError && linkList && (
+                  <Autocomplete
+                    {...linkAutocompleteProps}
+                    value={link}
+                    onChange={(event, newValue) => {
+                      setLink(newValue);
+                    }}
+                    renderInput={(params) => <TextField {...params} variant="standard" />}
+                    sx={{
+                      "& .MuiAutocomplete-input": {
+                        width: "100% !important",
+                      },
+                      "& .MuiInputBase-root": {
+                        color: `${theme.palette.grey[500]} !important`,
+                      },
+                      "& .MuiInputBase-root::before": {
+                        borderBottom: `1px solid ${theme.palette.grey[200]}`,
+                      },
+                      color: theme.palette.grey[500],
+                      "& .MuiSvgIcon-root": {
+                        color: theme.palette.grey[200],
+                      },
+                    }}
+                  />
+                )}
+              </Box>
+              <Box display={link ? "block" : "none"}>
+                <Typography
+                  sx={{
+                    // TODO: namesti da bude drugacije boje status ispisan u zavisnosti sta pise da bude uocljivije
+                    color: theme.palette.grey.main,
+                    p: "0.2rem 0",
+                    fontSize: "18px",
+                  }}
+                >
+                  {link && link.status}
+                </Typography>
+              </Box>
+              <Box>
+                <Tooltip title="Add new client link" placement="top" arrow>
+                  <IconButton
+                    onClick={() => {
+                      setOpenLinkDialog(true);
+                    }}
+                  >
+                    <Add
+                      sx={{
+                        color: theme.palette.grey.main,
+                        fontSize: "30px",
+                        border: `1px solid ${theme.palette.grey.main}`,
+                        borderRadius: "5px",
+                        ":hover": {
+                          color: theme.palette.grey[900],
+                          backgroundColor: theme.palette.grey.main,
+                        },
+                      }}
+                    />
+                  </IconButton>
+                </Tooltip>
+              </Box>
             </Box>
 
             {/* Urgency Level */}
@@ -410,6 +541,7 @@ const NewPostDialog = ({ title, open, setOpen, handleConfirm }) => {
         </DialogActions>
       </Dialog>
       <NewWebsiteDialog title="Add New Website" open={openWebsiteDialog} setOpen={setOpenWebsiteDialog} handleConfirm={confirmWebsiteDialogHandler} />
+      <NewClientLinkDialog title="Add New Link" open={openLinkDialog} setOpen={setOpenLinkDialog} handleConfirm={confirmLinkDialogHandler} />
     </Box>
   );
 };
