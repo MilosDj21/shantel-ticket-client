@@ -1,6 +1,24 @@
 import React, { useState, useEffect } from "react";
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, useTheme, Slide, InputBase, Typography, FormControl, Select, MenuItem } from "@mui/material";
-import { Title, Language, Anchor, Link, AccessTime, Numbers, Article } from "@mui/icons-material";
+import {
+  Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  useTheme,
+  Slide,
+  InputBase,
+  Typography,
+  FormControl,
+  Select,
+  MenuItem,
+  Autocomplete,
+  TextField,
+  Tooltip,
+  IconButton,
+} from "@mui/material";
+import { Title, Language, Anchor, Link, AccessTime, Numbers, Article, Add } from "@mui/icons-material";
 import useHttp from "../../hooks/use-http";
 import NewWebsiteDialog from "./NewWebsiteDialog";
 
@@ -14,7 +32,7 @@ const NewPostDialog = ({ title, open, setOpen, handleConfirm }) => {
   const { sendRequest: newWebsiteSendRequest } = useHttp();
   const [postTitle, setPostTitle] = useState("");
   const [websiteList, setWebsiteList] = useState(null);
-  const [website, setWebsite] = useState("Pick Website");
+  const [website, setWebsite] = useState(null);
   const [anchor, setAnchor] = useState("");
   const [link, setLink] = useState("");
   const [urgency, setUrgency] = useState("");
@@ -22,6 +40,11 @@ const NewPostDialog = ({ title, open, setOpen, handleConfirm }) => {
   const [wordNum, setWordNum] = useState("");
   const [clientHasText, setClientHasText] = useState(false);
   const [openWebsiteDialog, setOpenWebsiteDialog] = useState(false);
+
+  const defaultAutocompleteProps = {
+    options: websiteList,
+    getOptionLabel: (option) => option.url,
+  };
 
   useEffect(() => {
     sendRequest(
@@ -38,15 +61,6 @@ const NewPostDialog = ({ title, open, setOpen, handleConfirm }) => {
       }
     );
   }, [sendRequest]);
-
-  const selectWebsiteHandler = (event) => {
-    if (event.target.value === "addnew") {
-      setOpenWebsiteDialog(true);
-      setWebsite("Pick Website");
-    } else {
-      setWebsite(event.target.value);
-    }
-  };
 
   const confirmWebsiteDialogHandler = (url, category) => {
     const trimmed = url.trim();
@@ -70,7 +84,7 @@ const NewPostDialog = ({ title, open, setOpen, handleConfirm }) => {
         setWebsiteList((prevVal) => {
           return [websiteData, ...prevVal];
         });
-        setWebsite(websiteData._id);
+        setWebsite(websiteData);
       }
     );
     setOpenWebsiteDialog(false);
@@ -137,59 +151,71 @@ const NewPostDialog = ({ title, open, setOpen, handleConfirm }) => {
             </Box>
 
             {/* Website */}
-            <Box backgroundColor={theme.palette.background.light} display="flex" alignItems="center" borderRadius="9px" gap="1rem" p="0.1rem 1.5rem" width="100%">
-              <Language
-                sx={{
-                  color: theme.palette.grey[700],
-                  fontSize: "30px",
-                }}
-              />
-              <Typography
-                sx={{
-                  color: theme.palette.grey[700],
-                  p: "0.2rem 0",
-                  fontSize: "18px",
-                }}
-              >
-                Website
-              </Typography>
-              <FormControl
-                variant="standard"
-                sx={{
-                  "& .MuiFormControl-root": {
-                    width: "100%",
-                  },
-                }}
-              >
-                <Select
-                  value={website}
-                  onChange={(event) => selectWebsiteHandler(event)}
+            <Box backgroundColor={theme.palette.background.light} display="flex" alignItems="center" justifyContent="space-between" borderRadius="9px" p="0.1rem 1.5rem" width="100%">
+              <Box display="flex" alignItems="center" borderRadius="9px" gap="1rem" width="90%">
+                <Language
                   sx={{
-                    "::before": {
-                      borderBottom: `1px solid ${theme.palette.grey[200]}`,
-                    },
-                    color: theme.palette.grey[500],
-                    "& .MuiSvgIcon-root": {
-                      color: theme.palette.grey[200],
-                    },
+                    color: theme.palette.grey[700],
+                    fontSize: "30px",
+                  }}
+                />
+                <Typography
+                  sx={{
+                    color: theme.palette.grey[700],
+                    p: "0.2rem 0",
+                    fontSize: "18px",
                   }}
                 >
-                  <MenuItem value="Pick Website" disabled>
-                    Pick Website
-                  </MenuItem>
-                  <MenuItem value="addnew">Add New</MenuItem>
-                  {!isLoading &&
-                    !error &&
-                    websiteList &&
-                    websiteList.map((w) => {
-                      return (
-                        <MenuItem key={w._id} value={w._id}>
-                          {w.url}
-                        </MenuItem>
-                      );
-                    })}
-                </Select>
-              </FormControl>
+                  Website
+                </Typography>
+                {!isLoading && !error && websiteList && (
+                  <Autocomplete
+                    {...defaultAutocompleteProps}
+                    value={website}
+                    onChange={(event, newValue) => {
+                      setWebsite(newValue);
+                    }}
+                    renderInput={(params) => <TextField {...params} variant="standard" />}
+                    sx={{
+                      "& .MuiAutocomplete-input": {
+                        width: "100% !important",
+                      },
+                      "& .MuiInputBase-root": {
+                        color: `${theme.palette.grey[500]} !important`,
+                      },
+                      "& .MuiInputBase-root::before": {
+                        borderBottom: `1px solid ${theme.palette.grey[200]}`,
+                      },
+                      color: theme.palette.grey[500],
+                      "& .MuiSvgIcon-root": {
+                        color: theme.palette.grey[200],
+                      },
+                    }}
+                  />
+                )}
+              </Box>
+              <Box>
+                <Tooltip title="Add new website" placement="top" arrow>
+                  <IconButton
+                    onClick={() => {
+                      setOpenWebsiteDialog(true);
+                    }}
+                  >
+                    <Add
+                      sx={{
+                        color: theme.palette.grey.main,
+                        fontSize: "30px",
+                        border: `1px solid ${theme.palette.grey.main}`,
+                        borderRadius: "5px",
+                        ":hover": {
+                          color: theme.palette.grey[900],
+                          backgroundColor: theme.palette.grey.main,
+                        },
+                      }}
+                    />
+                  </IconButton>
+                </Tooltip>
+              </Box>
             </Box>
 
             {/* Post Category */}
