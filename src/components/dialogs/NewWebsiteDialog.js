@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, useTheme, Slide, InputBase, Typography, FormControl, Select, MenuItem } from "@mui/material";
-import { Title } from "@mui/icons-material";
+import { Link, Title } from "@mui/icons-material";
 
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
@@ -49,7 +49,7 @@ const NewWebsiteDialog = ({ title, open, setOpen, handleConfirm }) => {
           <Box display="flex" flexDirection="column" alignItems="center" gap="1.5rem" p="3rem 3rem 3rem 3rem" backgroundColor="rgba(17, 18, 20, 0.3)" borderRadius="9px" width="100%">
             {/* Url */}
             <Box backgroundColor={theme.palette.background.light} display="flex" alignItems="center" borderRadius="9px" gap="1rem" p="0.1rem 1.5rem" width="100%">
-              <Title
+              <Link
                 sx={{
                   color: theme.palette.grey[700],
                   fontSize: "30px",
