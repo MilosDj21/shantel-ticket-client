@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, useTheme, Slide, InputBase, Typography, FormControl, Select, MenuItem } from "@mui/material";
-import { Link, Person } from "@mui/icons-material";
+import { useSelector } from "react-redux";
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, useTheme, Slide, InputBase, Typography, Autocomplete, TextField, Tooltip, IconButton } from "@mui/material";
+import { Link, Person, Add } from "@mui/icons-material";
 
 import useHttp from "../../hooks/use-http";
 import NewClientDialog from "./NewClientDialog";
@@ -11,12 +12,18 @@ const Transition = React.forwardRef(function Transition(props, ref) {
 
 const NewClientLinkDialog = ({ title, open, setOpen, handleConfirm }) => {
   const theme = useTheme();
+  const userId = useSelector((state) => state.userId);
   const { isLoading, error, sendRequest } = useHttp();
   const { sendRequest: newClientSendRequest } = useHttp();
   const [url, setUrl] = useState("");
-  const [client, setClient] = useState("");
+  const [client, setClient] = useState(null);
   const [clientList, setClientList] = useState(null);
   const [openClientDialog, setOpenClientDialog] = useState(false);
+
+  const clientAutocompleteProps = {
+    options: clientList,
+    getOptionLabel: (option) => option.email,
+  };
 
   useEffect(() => {
     sendRequest(
@@ -34,15 +41,6 @@ const NewClientLinkDialog = ({ title, open, setOpen, handleConfirm }) => {
     );
   }, [sendRequest]);
 
-  const selectClientHandler = (event) => {
-    if (event.target.value === "addnew") {
-      setOpenClientDialog(true);
-      setClient("Pick Client");
-    } else {
-      setClient(event.target.value);
-    }
-  };
-
   const confirmClientDialogHandler = (email) => {
     if (!email.includes("@") || !email.includes(".")) return;
     newClientSendRequest(
@@ -53,7 +51,8 @@ const NewClientLinkDialog = ({ title, open, setOpen, handleConfirm }) => {
           "Content-Type": "application/json",
         },
         body: {
-          email,
+          email: email.trim(),
+          user: userId,
         },
       },
       (clientData) => {
@@ -61,9 +60,10 @@ const NewClientLinkDialog = ({ title, open, setOpen, handleConfirm }) => {
         setClientList((prevVal) => {
           return [clientData, ...prevVal];
         });
-        setClient(clientData._id);
+        setClient(clientData);
       }
     );
+    setOpenClientDialog(false);
   };
 
   return (
@@ -127,59 +127,71 @@ const NewClientLinkDialog = ({ title, open, setOpen, handleConfirm }) => {
             </Box>
 
             {/* Client */}
-            <Box backgroundColor={theme.palette.background.light} display="flex" alignItems="center" borderRadius="9px" gap="1rem" p="0.1rem 1.5rem" width="100%">
-              <Person
-                sx={{
-                  color: theme.palette.grey[700],
-                  fontSize: "30px",
-                }}
-              />
-              <Typography
-                sx={{
-                  color: theme.palette.grey[700],
-                  p: "0.2rem 0",
-                  fontSize: "18px",
-                }}
-              >
-                Category
-              </Typography>
-              <FormControl
-                variant="standard"
-                sx={{
-                  "& .MuiFormControl-root": {
-                    width: "100%",
-                  },
-                }}
-              >
-                <Select
-                  value={client}
-                  onChange={(event) => selectClientHandler(event)}
+            <Box backgroundColor={theme.palette.background.light} display="flex" alignItems="center" justifyContent="space-between" borderRadius="9px" p="0.1rem 1.5rem" width="100%">
+              <Box display="flex" alignItems="center" borderRadius="9px" gap="1rem" width="90%">
+                <Person
                   sx={{
-                    "::before": {
-                      borderBottom: `1px solid ${theme.palette.grey[200]}`,
-                    },
-                    color: theme.palette.grey[500],
-                    "& .MuiSvgIcon-root": {
-                      color: theme.palette.grey[200],
-                    },
+                    color: theme.palette.grey[700],
+                    fontSize: "30px",
+                  }}
+                />
+                <Typography
+                  sx={{
+                    color: theme.palette.grey[700],
+                    p: "0.2rem 0",
+                    fontSize: "18px",
                   }}
                 >
-                  <MenuItem value="Pick Client" disabled>
-                    Pick Client
-                  </MenuItem>
-                  <MenuItem value="addnew">Add New</MenuItem>
-                  {!isLoading &&
-                    !error &&
-                    clientList &&
-                    clientList.map((c) => {
-                      return (
-                        <MenuItem key={c._id} value={c._id}>
-                          {c.email}
-                        </MenuItem>
-                      );
-                    })}
-                </Select>
-              </FormControl>
+                  Client
+                </Typography>
+                {!isLoading && !error && clientList && (
+                  <Autocomplete
+                    {...clientAutocompleteProps}
+                    value={client}
+                    onChange={(event, newValue) => {
+                      setClient(newValue);
+                    }}
+                    renderInput={(params) => <TextField {...params} variant="standard" />}
+                    sx={{
+                      "& .MuiAutocomplete-input": {
+                        width: "100% !important",
+                      },
+                      "& .MuiInputBase-root": {
+                        color: `${theme.palette.grey[500]} !important`,
+                      },
+                      "& .MuiInputBase-root::before": {
+                        borderBottom: `1px solid ${theme.palette.grey[200]}`,
+                      },
+                      color: theme.palette.grey[500],
+                      "& .MuiSvgIcon-root": {
+                        color: theme.palette.grey[200],
+                      },
+                    }}
+                  />
+                )}
+              </Box>
+              <Box>
+                <Tooltip title="Add new client" placement="top" arrow>
+                  <IconButton
+                    onClick={() => {
+                      setOpenClientDialog(true);
+                    }}
+                  >
+                    <Add
+                      sx={{
+                        color: theme.palette.grey.main,
+                        fontSize: "30px",
+                        border: `1px solid ${theme.palette.grey.main}`,
+                        borderRadius: "5px",
+                        ":hover": {
+                          color: theme.palette.grey[900],
+                          backgroundColor: theme.palette.grey.main,
+                        },
+                      }}
+                    />
+                  </IconButton>
+                </Tooltip>
+              </Box>
             </Box>
           </Box>
         </DialogContent>
@@ -192,7 +204,7 @@ const NewClientLinkDialog = ({ title, open, setOpen, handleConfirm }) => {
           <Button
             onClick={() => {
               setUrl("");
-              setClient("Regularan");
+              setClient(null);
               setOpen(false);
             }}
             sx={{
@@ -205,7 +217,7 @@ const NewClientLinkDialog = ({ title, open, setOpen, handleConfirm }) => {
             onClick={() => {
               handleConfirm(url, client);
               setUrl("");
-              setClient("Regularan");
+              setClient(null);
             }}
             autoFocus
           >
