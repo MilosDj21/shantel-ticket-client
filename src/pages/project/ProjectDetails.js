@@ -2,12 +2,11 @@ import { Fragment, useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { DataGrid } from "@mui/x-data-grid";
-import { Button, Box, Typography, useTheme, useMediaQuery, Divider, Select, MenuItem, FormControl, IconButton, Tooltip } from "@mui/material";
+import { Button, Box, useTheme, useMediaQuery, IconButton, Tooltip } from "@mui/material";
 import { Add } from "@mui/icons-material";
 import parse from "html-react-parser";
 
 import useHttp from "../../hooks/use-http";
-import FlexBetween from "../../components/FlexBetween";
 import TextOrInput from "../../components/TextOrInput";
 import TaskColumn from "../../components/TaskColumn";
 import NewPostDialog from "../../components/dialogs/NewPostDialog";
@@ -27,7 +26,6 @@ const ProjectDetails = () => {
   const { sendRequest: createTaskSendRequest } = useHttp();
   const { sendRequest: createPostSendRequest } = useHttp();
   const [data, setData] = useState("");
-  const [search, setSearch] = useState("");
   const [openDialog, setOpenDialog] = useState(false);
 
   // RETRIEVE INITIAL DATA FROM SERVER
@@ -48,7 +46,7 @@ const ProjectDetails = () => {
   }, [sendRequest, projectId]);
 
   const confirmDialogHandle = async (postTitle, website, postCategory, anchor, link, urgency, wordNum, clientHasText) => {
-    // TODO: treba da se implementira da cuva prvo sajt, i onda taj id od sajta da se ubaci u post
+    if (!postTitle || !website || !postCategory || !anchor || !link || !urgency || !wordNum) return;
     createPostSendRequest(
       {
         url: `/postRequests`,
@@ -58,10 +56,10 @@ const ProjectDetails = () => {
         },
         body: {
           title: postTitle,
-          website,
+          website: website._id,
           postCategory,
           anchor,
-          clientPaidLink: link,
+          clientPaidLink: link._id,
           urgencyLevel: urgency,
           wordNum,
           project: projectId,
