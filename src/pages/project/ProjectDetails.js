@@ -2,7 +2,7 @@ import { Fragment, useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { DataGrid } from "@mui/x-data-grid";
-import { Button, Box, useTheme, useMediaQuery, IconButton, Tooltip } from "@mui/material";
+import { Button, Box, useTheme, useMediaQuery, IconButton, Tooltip, Typography } from "@mui/material";
 import { Add } from "@mui/icons-material";
 import parse from "html-react-parser";
 
@@ -276,6 +276,30 @@ const ProjectDetails = () => {
       valueGetter: (params) => {
         return params.row.clientPaidLink.status;
       },
+      renderCell: (params) => {
+        let linkStatusColor = theme.palette.grey.main;
+        switch (params.value) {
+          case "Odobren":
+            linkStatusColor = theme.palette.primary.main;
+            break;
+          case "Semafor":
+            linkStatusColor = "#eddd50";
+            break;
+          case "Pijaca":
+            linkStatusColor = "#b14fea";
+            break;
+          case "Odbijen":
+            linkStatusColor = "#e84e4e";
+            break;
+          default:
+            linkStatusColor = theme.palette.grey.main;
+        }
+        return (
+          <Typography color={linkStatusColor} fontSize="0.75rem">
+            {params.value}
+          </Typography>
+        );
+      },
     },
     {
       field: "textLink",
@@ -410,15 +434,15 @@ const ProjectDetails = () => {
             "& .MuiIconButton-root": {
               color: `${theme.palette.grey[300]} !important`,
             },
-            "& .new-project": {
-              backgroundColor: "#34488e",
-            },
-            "& .in-progress-project": {
-              backgroundColor: theme.palette.secondary[700],
-            },
-            "& .closed-project": {
-              backgroundColor: "#913232",
-            },
+            // "& .new-project": {
+            //   backgroundColor: "#34488e",
+            // },
+            // "& .in-progress-project": {
+            //   backgroundColor: theme.palette.secondary[700],
+            // },
+            // "& .closed-project": {
+            //   backgroundColor: "#913232",
+            // },
           }}
         >
           <DataGrid
