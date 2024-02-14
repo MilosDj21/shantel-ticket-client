@@ -47,6 +47,26 @@ const NewPostDialog = ({ title, open, setOpen, handleConfirm }) => {
   const [openWebsiteDialog, setOpenWebsiteDialog] = useState(false);
   const [openLinkDialog, setOpenLinkDialog] = useState(false);
 
+  let linkStatusColor = theme.palette.grey.main;
+  if (link) {
+    switch (link.status) {
+      case "Odobren":
+        linkStatusColor = theme.palette.primary.main;
+        break;
+      case "Semafor":
+        linkStatusColor = "#eddd50";
+        break;
+      case "Pijaca":
+        linkStatusColor = "#b14fea";
+        break;
+      case "Odbijen":
+        linkStatusColor = "#e84e4e";
+        break;
+      default:
+        linkStatusColor = theme.palette.grey.main;
+    }
+  }
+
   const websiteAutocompleteProps = {
     options: websiteList,
     getOptionLabel: (option) => option.url,
@@ -388,8 +408,7 @@ const NewPostDialog = ({ title, open, setOpen, handleConfirm }) => {
               <Box display={link ? "block" : "none"}>
                 <Typography
                   sx={{
-                    // TODO: namesti da bude drugacije boje status ispisan u zavisnosti sta pise da bude uocljivije
-                    color: theme.palette.grey.main,
+                    color: linkStatusColor,
                     p: "0.2rem 0",
                     fontSize: "18px",
                   }}
