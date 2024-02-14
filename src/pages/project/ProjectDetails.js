@@ -10,6 +10,7 @@ import useHttp from "../../hooks/use-http";
 import TextOrInput from "../../components/TextOrInput";
 import TaskColumn from "../../components/TaskColumn";
 import NewPostDialog from "../../components/dialogs/NewPostDialog";
+import PostDetailsDialog from "../../components/dialogs/PostDetailsDialog";
 
 const serverAddress = process.env.ENVIRONMENT === "production" ? process.env.REACT_APP_PROD_BASE_URL : process.env.REACT_APP_DEV_BASE_URL;
 
@@ -26,7 +27,9 @@ const ProjectDetails = () => {
   const { sendRequest: createTaskSendRequest } = useHttp();
   const { sendRequest: createPostSendRequest } = useHttp();
   const [data, setData] = useState("");
-  const [openDialog, setOpenDialog] = useState(false);
+  const [selectedPost, setSelectedPost] = useState(null);
+  const [openNewPostDialog, setOpenNewPostDialog] = useState(false);
+  const [openSelectedPostDialog, setOpenSelectedPostDialog] = useState(false);
 
   // RETRIEVE INITIAL DATA FROM SERVER
   useEffect(() => {
@@ -45,7 +48,7 @@ const ProjectDetails = () => {
     );
   }, [sendRequest, projectId]);
 
-  const confirmDialogHandle = async (postTitle, website, postCategory, anchor, link, urgency, wordNum, clientHasText) => {
+  const confirmNewPostDialogHandle = async (postTitle, website, postCategory, anchor, link, urgency, wordNum, clientHasText) => {
     if (!postTitle || !website || !postCategory || !anchor || !link || !urgency || !wordNum) return;
     createPostSendRequest(
       {
@@ -73,7 +76,12 @@ const ProjectDetails = () => {
     console.log(postTitle, website, postCategory, anchor, link, urgency, wordNum, clientHasText);
   };
 
+  const confirmSelectedPostDialogHandle = () => {};
+
   const rowClickHandle = async (params) => {
+    console.log(params.row);
+    setSelectedPost(params.row);
+    setOpenSelectedPostDialog(true);
     // navigate(`/postRequests/${params.id}`);
   };
 
@@ -158,9 +166,13 @@ const ProjectDetails = () => {
               },
             },
             (groupData) => {
+              console.log("🚀 ~ buttonClickHandle ~ groupData:", groupData);
               // TODO: privremeno resenje posto kad se kreira novi ne povlaci taskove
-              groupData.tasks = [];
-              data.groups.push(groupData);
+              // TODO: kada na bekendu namestis da povuce i taskove proveri da li onda radi ovako
+              if (!groupData.tasks) {
+                groupData.tasks = [];
+                data.groups.push(groupData);
+              }
               console.log("group:", groupData);
               // create new task for next step
               createTask(groupData._id);
@@ -337,7 +349,7 @@ const ProjectDetails = () => {
             ready = true;
             break;
           case "pendingWrite":
-            buttonText = "Waiting For Writer";
+            buttonText = "Waiting For Write";
             break;
           case "doneWrite":
             buttonText = "Send to Publish";
@@ -388,7 +400,7 @@ const ProjectDetails = () => {
             <Tooltip title="Add new post" placement="top" arrow>
               <IconButton
                 onClick={() => {
-                  setOpenDialog(true);
+                  setOpenNewPostDialog(true);
                 }}
               >
                 <Add
@@ -405,7 +417,6 @@ const ProjectDetails = () => {
                 />
               </IconButton>
             </Tooltip>
-            <NewPostDialog title="Add New Post" open={openDialog} setOpen={setOpenDialog} handleConfirm={confirmDialogHandle} />
           </Box>
         )}
         <Box
@@ -467,6 +478,8 @@ const ProjectDetails = () => {
           })}
         </Box>
       )}
+      <NewPostDialog title="Add New Post" open={openNewPostDialog} setOpen={setOpenNewPostDialog} handleConfirm={confirmNewPostDialogHandle} />
+      <PostDetailsDialog post={selectedPost} open={openSelectedPostDialog} setOpen={setOpenSelectedPostDialog} handleConfirm={confirmSelectedPostDialogHandle} />
     </Fragment>
   );
 };
