@@ -1,22 +1,9 @@
 import { Box, Typography, useTheme } from "@mui/material";
 
-const TaskSingle = ({ title, msgNum, status }) => {
-  const theme = useTheme();
+const serverAddress = process.env.ENVIRONMENT === "production" ? process.env.REACT_APP_PROD_BASE_URL : process.env.REACT_APP_DEV_BASE_URL;
 
-  let statusBackground = "";
-  switch (status) {
-    case "New":
-      statusBackground = "#34488e";
-      break;
-    case "In Progress":
-      statusBackground = theme.palette.secondary[700];
-      break;
-    case "Closed":
-      statusBackground = "#913232";
-      break;
-    default:
-      break;
-  }
+const TaskSingle = ({ title, msgNum, assignedUser }) => {
+  const theme = useTheme();
 
   return (
     <Box
@@ -37,20 +24,25 @@ const TaskSingle = ({ title, msgNum, status }) => {
         {title}
       </Typography>
       <Box display="flex" justifyContent="space-between">
-        <Typography
-          sx={{
-            fontSize: "0.60rem",
-            p: "0.3rem 0.5rem",
-            borderRadius: "20px",
-            backgroundColor: statusBackground,
-          }}
-        >
-          {status}
-        </Typography>
+        {assignedUser ? (
+          <Box
+            component="img"
+            alt="profile"
+            src={serverAddress + "/" + assignedUser.profileImage}
+            crossOrigin="use-credentials"
+            height="32px"
+            width="32px"
+            borderRadius="50%"
+            sx={{ objectFit: "cover" }}
+          />
+        ) : (
+          <Box />
+        )}
         <Typography
           sx={{
             fontSize: "0.60rem",
             p: "0.2rem 0.5rem",
+            m: "5px 0",
             backgroundColor: theme.palette.secondary[700],
             borderRadius: "20px 20px 20px 0",
           }}
