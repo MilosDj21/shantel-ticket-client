@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { useSelector } from "react-redux";
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, useTheme, Slide, InputBase, Typography, Autocomplete, TextField, Tooltip, IconButton } from "@mui/material";
 import { Link, Person, Add } from "@mui/icons-material";
 
@@ -12,9 +11,7 @@ const Transition = React.forwardRef(function Transition(props, ref) {
 
 const NewClientLinkDialog = ({ title, open, setOpen, handleConfirm }) => {
   const theme = useTheme();
-  const userId = useSelector((state) => state.userId);
   const { isLoading, error, sendRequest } = useHttp();
-  const { sendRequest: newClientSendRequest } = useHttp();
   const [url, setUrl] = useState("");
   const [client, setClient] = useState(null);
   const [clientList, setClientList] = useState(null);
@@ -35,36 +32,11 @@ const NewClientLinkDialog = ({ title, open, setOpen, handleConfirm }) => {
         },
       },
       (clientData) => {
-        console.log(clientData);
+        console.log("clients:", clientData);
         setClientList(clientData);
       }
     );
   }, [sendRequest]);
-
-  const confirmClientDialogHandler = (email) => {
-    if (!email.includes("@") || !email.includes(".")) return;
-    newClientSendRequest(
-      {
-        url: "/clients",
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: {
-          email: email.trim(),
-          user: userId,
-        },
-      },
-      (clientData) => {
-        console.log(clientData);
-        setClientList((prevVal) => {
-          return [clientData, ...prevVal];
-        });
-        setClient(clientData);
-      }
-    );
-    setOpenClientDialog(false);
-  };
 
   return (
     <Box>
@@ -82,8 +54,7 @@ const NewClientLinkDialog = ({ title, open, setOpen, handleConfirm }) => {
           sx: {
             borderRadius: "9px",
           },
-        }}
-      >
+        }}>
         <DialogTitle
           sx={{
             color: theme.palette.grey[200],
@@ -92,15 +63,13 @@ const NewClientLinkDialog = ({ title, open, setOpen, handleConfirm }) => {
             textAlign: "center",
             p: "1.5rem",
           }}
-          id="alert-dialog-title"
-        >
+          id="alert-dialog-title">
           {title}
         </DialogTitle>
         <DialogContent
           sx={{
             backgroundColor: theme.palette.background.default,
-          }}
-        >
+          }}>
           <Box display="flex" flexDirection="column" alignItems="center" gap="1.5rem" p="3rem 3rem 3rem 3rem" backgroundColor="rgba(17, 18, 20, 0.3)" borderRadius="9px" width="100%">
             {/* Url */}
             <Box backgroundColor={theme.palette.background.light} display="flex" alignItems="center" borderRadius="9px" gap="1rem" p="0.1rem 1.5rem" width="100%">
@@ -140,8 +109,7 @@ const NewClientLinkDialog = ({ title, open, setOpen, handleConfirm }) => {
                     color: theme.palette.grey[700],
                     p: "0.2rem 0",
                     fontSize: "18px",
-                  }}
-                >
+                  }}>
                   Client
                 </Typography>
                 {!isLoading && !error && clientList && (
@@ -175,8 +143,7 @@ const NewClientLinkDialog = ({ title, open, setOpen, handleConfirm }) => {
                   <IconButton
                     onClick={() => {
                       setOpenClientDialog(true);
-                    }}
-                  >
+                    }}>
                     <Add
                       sx={{
                         color: theme.palette.grey.main,
@@ -199,8 +166,7 @@ const NewClientLinkDialog = ({ title, open, setOpen, handleConfirm }) => {
           sx={{
             backgroundColor: theme.palette.background.default,
             p: "0 1.5rem 1.5rem 0",
-          }}
-        >
+          }}>
           <Button
             onClick={() => {
               setUrl("");
@@ -209,8 +175,7 @@ const NewClientLinkDialog = ({ title, open, setOpen, handleConfirm }) => {
             }}
             sx={{
               color: "white",
-            }}
-          >
+            }}>
             Cancel
           </Button>
           <Button
@@ -219,13 +184,12 @@ const NewClientLinkDialog = ({ title, open, setOpen, handleConfirm }) => {
               setUrl("");
               setClient(null);
             }}
-            autoFocus
-          >
+            autoFocus>
             Save
           </Button>
         </DialogActions>
       </Dialog>
-      <NewClientDialog title="Add New Client" open={openClientDialog} setOpen={setOpenClientDialog} handleConfirm={confirmClientDialogHandler} />
+      <NewClientDialog title="Add New Client" open={openClientDialog} setOpen={setOpenClientDialog} setClient={setClient} setClientList={setClientList} />
     </Box>
   );
 };

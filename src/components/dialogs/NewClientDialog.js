@@ -2,13 +2,40 @@ import React, { useState } from "react";
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, useTheme, Slide, InputBase } from "@mui/material";
 import { Email } from "@mui/icons-material";
 
+import useHttp from "../../hooks/use-http";
+
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
 });
 
-const NewClientDialog = ({ title, open, setOpen, handleConfirm }) => {
+const NewClientDialog = ({ title, open, setOpen, setClient, setClientList }) => {
   const theme = useTheme();
+  const { sendRequest } = useHttp();
   const [email, setEmail] = useState("");
+
+  const createNewClientHandler = (email) => {
+    if (!email.includes("@") || !email.includes(".")) return;
+    sendRequest(
+      {
+        url: "/clients",
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: {
+          email: email.trim(),
+        },
+      },
+      (clientData) => {
+        console.log("client:", clientData);
+        setClientList((prevVal) => {
+          return [clientData, ...prevVal];
+        });
+        setClient(clientData);
+        setOpen(false);
+      }
+    );
+  };
 
   return (
     <Box>
@@ -26,8 +53,7 @@ const NewClientDialog = ({ title, open, setOpen, handleConfirm }) => {
           sx: {
             borderRadius: "9px",
           },
-        }}
-      >
+        }}>
         <DialogTitle
           sx={{
             color: theme.palette.grey[200],
@@ -36,15 +62,13 @@ const NewClientDialog = ({ title, open, setOpen, handleConfirm }) => {
             textAlign: "center",
             p: "1.5rem",
           }}
-          id="alert-dialog-title"
-        >
+          id="alert-dialog-title">
           {title}
         </DialogTitle>
         <DialogContent
           sx={{
             backgroundColor: theme.palette.background.default,
-          }}
-        >
+          }}>
           <Box display="flex" flexDirection="column" alignItems="center" gap="1.5rem" p="3rem 3rem 3rem 3rem" backgroundColor="rgba(17, 18, 20, 0.3)" borderRadius="9px" width="100%">
             {/* Url */}
             <Box backgroundColor={theme.palette.background.light} display="flex" alignItems="center" borderRadius="9px" gap="1rem" p="0.1rem 1.5rem" width="100%">
@@ -75,8 +99,7 @@ const NewClientDialog = ({ title, open, setOpen, handleConfirm }) => {
           sx={{
             backgroundColor: theme.palette.background.default,
             p: "0 1.5rem 1.5rem 0",
-          }}
-        >
+          }}>
           <Button
             onClick={() => {
               setEmail("");
@@ -84,17 +107,15 @@ const NewClientDialog = ({ title, open, setOpen, handleConfirm }) => {
             }}
             sx={{
               color: "white",
-            }}
-          >
+            }}>
             Cancel
           </Button>
           <Button
             onClick={() => {
-              handleConfirm(email);
+              createNewClientHandler(email);
               setEmail("");
             }}
-            autoFocus
-          >
+            autoFocus>
             Save
           </Button>
         </DialogActions>
