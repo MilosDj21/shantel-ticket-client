@@ -28,8 +28,9 @@ const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
 });
 
-const NewPostDialog = ({ title, open, setOpen, handleConfirm }) => {
+const NewPostDialog = ({ title, open, setOpen, project, setProject = null }) => {
   const theme = useTheme();
+  const { sendRequest } = useHttp();
   const { isLoading: getWebsitesIsLoading, error: getWebsitesError, sendRequest: getWebsitesSendRequest } = useHttp();
   const { isLoading: getLinksSendIsLoading, error: getLinksSendError, sendRequest: getLinksSendRequest } = useHttp();
   const [postTitle, setPostTitle] = useState("");
@@ -103,6 +104,40 @@ const NewPostDialog = ({ title, open, setOpen, handleConfirm }) => {
       }
     );
   }, [getWebsitesSendRequest, getLinksSendRequest]);
+
+  const createPostHandler = async () => {
+    if (!postTitle || !website || !postCategory || !anchor || !link || !urgency || !wordNum) return;
+    sendRequest(
+      {
+        url: `/postRequests`,
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: {
+          title: postTitle,
+          website: website._id,
+          postCategory,
+          anchor,
+          clientPaidLink: link._id,
+          urgencyLevel: urgency,
+          wordNum,
+          project: project._id,
+          clientHasText,
+        },
+      },
+      (postData) => {
+        console.log("post:", postData);
+        if (setProject)
+          setProject((prevVal) => {
+            const newData = { ...prevVal };
+            newData.postRequests = [postData, ...prevVal.postRequests];
+            return newData;
+          });
+      }
+    );
+    console.log(postTitle, website, postCategory, anchor, link, urgency, wordNum, clientHasText);
+  };
 
   return (
     <Box>
@@ -477,7 +512,7 @@ const NewPostDialog = ({ title, open, setOpen, handleConfirm }) => {
           </Button>
           <Button
             onClick={() => {
-              handleConfirm(postTitle, website, postCategory, anchor, link, urgency, wordNum, clientHasText);
+              createPostHandler();
             }}
             autoFocus>
             Save

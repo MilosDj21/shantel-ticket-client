@@ -25,7 +25,6 @@ const ProjectDetails = () => {
   const { sendRequest: changeProgressSendRequest } = useHttp();
   const { sendRequest: createGroupSendRequest } = useHttp();
   const { sendRequest: createTaskSendRequest } = useHttp();
-  const { sendRequest: createPostSendRequest } = useHttp();
   const [data, setData] = useState("");
   const [selectedPost, setSelectedPost] = useState(null);
   const [openNewPostDialog, setOpenNewPostDialog] = useState(false);
@@ -42,39 +41,11 @@ const ProjectDetails = () => {
         },
       },
       (projectData) => {
-        console.log(projectData);
+        console.log("project:", projectData);
         setData(projectData);
       }
     );
   }, [sendRequest, projectId]);
-
-  const confirmNewPostDialogHandle = async (postTitle, website, postCategory, anchor, link, urgency, wordNum, clientHasText) => {
-    if (!postTitle || !website || !postCategory || !anchor || !link || !urgency || !wordNum) return;
-    createPostSendRequest(
-      {
-        url: `/postRequests`,
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: {
-          title: postTitle,
-          website: website._id,
-          postCategory,
-          anchor,
-          clientPaidLink: link._id,
-          urgencyLevel: urgency,
-          wordNum,
-          project: projectId,
-          clientHasText,
-        },
-      },
-      (postData) => {
-        console.log("post:", postData);
-      }
-    );
-    console.log(postTitle, website, postCategory, anchor, link, urgency, wordNum, clientHasText);
-  };
 
   const confirmSelectedPostDialogHandle = () => {};
 
@@ -370,8 +341,7 @@ const ProjectDetails = () => {
             onClick={(e) => {
               e.stopPropagation();
               buttonClickHandle(params.row);
-            }}
-          >
+            }}>
             {buttonText}
           </Button>
         ) : buttonText.length > 0 ? (
@@ -380,8 +350,7 @@ const ProjectDetails = () => {
             sx={{
               color: "#000 !important",
               backgroundColor: theme.palette.grey[600],
-            }}
-          >
+            }}>
             {buttonText}
           </Button>
         ) : (
@@ -401,8 +370,7 @@ const ProjectDetails = () => {
               <IconButton
                 onClick={() => {
                   setOpenNewPostDialog(true);
-                }}
-              >
+                }}>
                 <Add
                   sx={{
                     color: theme.palette.grey.main,
@@ -454,8 +422,7 @@ const ProjectDetails = () => {
             // "& .closed-project": {
             //   backgroundColor: "#913232",
             // },
-          }}
-        >
+          }}>
           <DataGrid
             loading={isLoading || !data}
             getRowId={(row) => row._id}
@@ -478,7 +445,7 @@ const ProjectDetails = () => {
           })}
         </Box>
       )}
-      <NewPostDialog title="Add New Post" open={openNewPostDialog} setOpen={setOpenNewPostDialog} handleConfirm={confirmNewPostDialogHandle} />
+      <NewPostDialog title="Add New Post" open={openNewPostDialog} setOpen={setOpenNewPostDialog} project={data} setProject={setData} />
       <PostDetailsDialog post={selectedPost} open={openSelectedPostDialog} setOpen={setOpenSelectedPostDialog} handleConfirm={confirmSelectedPostDialogHandle} />
     </Fragment>
   );
