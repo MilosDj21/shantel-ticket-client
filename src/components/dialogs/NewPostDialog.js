@@ -31,7 +31,6 @@ const Transition = React.forwardRef(function Transition(props, ref) {
 const NewPostDialog = ({ title, open, setOpen, handleConfirm }) => {
   const theme = useTheme();
   const { isLoading: getWebsitesIsLoading, error: getWebsitesError, sendRequest: getWebsitesSendRequest } = useHttp();
-  const { sendRequest: newWebsiteSendRequest } = useHttp();
   const { isLoading: getLinksSendIsLoading, error: getLinksSendError, sendRequest: getLinksSendRequest } = useHttp();
   const { sendRequest: newLinkSendRequest } = useHttp();
   const [postTitle, setPostTitle] = useState("");
@@ -106,34 +105,6 @@ const NewPostDialog = ({ title, open, setOpen, handleConfirm }) => {
     );
   }, [getWebsitesSendRequest, getLinksSendRequest]);
 
-  const confirmWebsiteDialogHandler = (url, category) => {
-    const trimmed = url.trim();
-    if (trimmed.length === 0) return;
-    const lastChar = trimmed.substring(trimmed.length - 1);
-    const filteredUrl = lastChar === "/" ? trimmed.substring(0, trimmed.length - 1) : trimmed;
-    newWebsiteSendRequest(
-      {
-        url: "/websites",
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: {
-          url: filteredUrl,
-          category,
-        },
-      },
-      (websiteData) => {
-        console.log(websiteData);
-        setWebsiteList((prevVal) => {
-          return [websiteData, ...prevVal];
-        });
-        setWebsite(websiteData);
-      }
-    );
-    setOpenWebsiteDialog(false);
-  };
-
   const confirmLinkDialogHandler = (url, client) => {
     const trimmed = url.trim();
     if (trimmed.length === 0 || !client) return;
@@ -178,8 +149,7 @@ const NewPostDialog = ({ title, open, setOpen, handleConfirm }) => {
           sx: {
             borderRadius: "9px",
           },
-        }}
-      >
+        }}>
         <DialogTitle
           sx={{
             color: theme.palette.grey[200],
@@ -188,15 +158,13 @@ const NewPostDialog = ({ title, open, setOpen, handleConfirm }) => {
             textAlign: "center",
             p: "1.5rem",
           }}
-          id="alert-dialog-title"
-        >
+          id="alert-dialog-title">
           {title}
         </DialogTitle>
         <DialogContent
           sx={{
             backgroundColor: theme.palette.background.default,
-          }}
-        >
+          }}>
           <Box display="flex" flexDirection="column" alignItems="center" gap="1.5rem" p="3rem 3rem 3rem 3rem" backgroundColor="rgba(17, 18, 20, 0.3)" borderRadius="9px" width="100%">
             {/* Title */}
             <Box backgroundColor={theme.palette.background.light} display="flex" alignItems="center" borderRadius="9px" gap="1rem" p="0.1rem 1.5rem" width="100%">
@@ -236,8 +204,7 @@ const NewPostDialog = ({ title, open, setOpen, handleConfirm }) => {
                     color: theme.palette.grey[700],
                     p: "0.2rem 0",
                     fontSize: "18px",
-                  }}
-                >
+                  }}>
                   Website
                 </Typography>
                 {!getWebsitesIsLoading && !getWebsitesError && websiteList && (
@@ -271,8 +238,7 @@ const NewPostDialog = ({ title, open, setOpen, handleConfirm }) => {
                   <IconButton
                     onClick={() => {
                       setOpenWebsiteDialog(true);
-                    }}
-                  >
+                    }}>
                     <Add
                       sx={{
                         color: theme.palette.grey.main,
@@ -303,8 +269,7 @@ const NewPostDialog = ({ title, open, setOpen, handleConfirm }) => {
                   color: theme.palette.grey[700],
                   p: "0.2rem 0",
                   fontSize: "18px",
-                }}
-              >
+                }}>
                 Post Type
               </Typography>
               <FormControl
@@ -313,8 +278,7 @@ const NewPostDialog = ({ title, open, setOpen, handleConfirm }) => {
                   "& .MuiFormControl-root": {
                     width: "100%",
                   },
-                }}
-              >
+                }}>
                 <Select
                   value={postCategory}
                   onChange={(event) => setPostCategory(event.target.value)}
@@ -326,8 +290,7 @@ const NewPostDialog = ({ title, open, setOpen, handleConfirm }) => {
                     "& .MuiSvgIcon-root": {
                       color: theme.palette.grey[200],
                     },
-                  }}
-                >
+                  }}>
                   <MenuItem value="Placeni">Placeni</MenuItem>
                   <MenuItem value="Insercija">Insercija</MenuItem>
                   <MenuItem value="Wayback">Wayback</MenuItem>
@@ -375,8 +338,7 @@ const NewPostDialog = ({ title, open, setOpen, handleConfirm }) => {
                     color: theme.palette.grey[700],
                     p: "0.2rem 0",
                     fontSize: "18px",
-                  }}
-                >
+                  }}>
                   Client Link
                 </Typography>
                 {!getLinksSendIsLoading && !getLinksSendError && linkList && (
@@ -411,8 +373,7 @@ const NewPostDialog = ({ title, open, setOpen, handleConfirm }) => {
                     color: linkStatusColor,
                     p: "0.2rem 0",
                     fontSize: "18px",
-                  }}
-                >
+                  }}>
                   {link && link.status}
                 </Typography>
               </Box>
@@ -421,8 +382,7 @@ const NewPostDialog = ({ title, open, setOpen, handleConfirm }) => {
                   <IconButton
                     onClick={() => {
                       setOpenLinkDialog(true);
-                    }}
-                  >
+                    }}>
                     <Add
                       sx={{
                         color: theme.palette.grey.main,
@@ -501,8 +461,7 @@ const NewPostDialog = ({ title, open, setOpen, handleConfirm }) => {
                   color: theme.palette.grey[700],
                   p: "0.2rem 0",
                   fontSize: "18px",
-                }}
-              >
+                }}>
                 Client has text:
               </Typography>
               <FormControl
@@ -511,8 +470,7 @@ const NewPostDialog = ({ title, open, setOpen, handleConfirm }) => {
                   "& .MuiFormControl-root": {
                     width: "100%",
                   },
-                }}
-              >
+                }}>
                 <Select
                   value={clientHasText}
                   onChange={(event) => setClientHasText(event.target.value)}
@@ -524,8 +482,7 @@ const NewPostDialog = ({ title, open, setOpen, handleConfirm }) => {
                     "& .MuiSvgIcon-root": {
                       color: theme.palette.grey[200],
                     },
-                  }}
-                >
+                  }}>
                   <MenuItem value={true}>Yes</MenuItem>
                   <MenuItem value={false}>No</MenuItem>
                 </Select>
@@ -537,29 +494,26 @@ const NewPostDialog = ({ title, open, setOpen, handleConfirm }) => {
           sx={{
             backgroundColor: theme.palette.background.default,
             p: "0 1.5rem 1.5rem 0",
-          }}
-        >
+          }}>
           <Button
             onClick={() => {
               setOpen(false);
             }}
             sx={{
               color: "white",
-            }}
-          >
+            }}>
             Cancel
           </Button>
           <Button
             onClick={() => {
               handleConfirm(postTitle, website, postCategory, anchor, link, urgency, wordNum, clientHasText);
             }}
-            autoFocus
-          >
+            autoFocus>
             Save
           </Button>
         </DialogActions>
       </Dialog>
-      <NewWebsiteDialog title="Add New Website" open={openWebsiteDialog} setOpen={setOpenWebsiteDialog} handleConfirm={confirmWebsiteDialogHandler} />
+      <NewWebsiteDialog title="Add New Website" open={openWebsiteDialog} setOpen={setOpenWebsiteDialog} setWebsite={setWebsite} setWebsiteList={setWebsiteList} />
       <NewClientLinkDialog title="Add New Link" open={openLinkDialog} setOpen={setOpenLinkDialog} handleConfirm={confirmLinkDialogHandler} />
     </Box>
   );
