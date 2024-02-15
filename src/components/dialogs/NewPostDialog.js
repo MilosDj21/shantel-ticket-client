@@ -30,7 +30,7 @@ const Transition = React.forwardRef(function Transition(props, ref) {
 
 const NewPostDialog = ({ title, open, setOpen, project, setProject = null }) => {
   const theme = useTheme();
-  const { sendRequest } = useHttp();
+  const { isLoading, error, sendRequest } = useHttp();
   const { isLoading: getWebsitesIsLoading, error: getWebsitesError, sendRequest: getWebsitesSendRequest } = useHttp();
   const { isLoading: getLinksSendIsLoading, error: getLinksSendError, sendRequest: getLinksSendRequest } = useHttp();
   const [postTitle, setPostTitle] = useState("");
@@ -106,8 +106,10 @@ const NewPostDialog = ({ title, open, setOpen, project, setProject = null }) => 
   }, [getWebsitesSendRequest, getLinksSendRequest]);
 
   const createPostHandler = async () => {
+    let post = null;
     if (!postTitle || !website || !postCategory || !anchor || !link || !urgency || !wordNum) return;
-    sendRequest(
+    // Save new post
+    await sendRequest(
       {
         url: `/postRequests`,
         method: "POST",
@@ -128,15 +130,92 @@ const NewPostDialog = ({ title, open, setOpen, project, setProject = null }) => 
       },
       (postData) => {
         console.log("post:", postData);
-        if (setProject)
+        post = postData;
+        if (setProject) {
           setProject((prevVal) => {
             const newData = { ...prevVal };
             newData.postRequests = [postData, ...prevVal.postRequests];
             return newData;
           });
+        }
       }
     );
-    console.log(postTitle, website, postCategory, anchor, link, urgency, wordNum, clientHasText);
+    // If post is saved ok, and link in that post is not checked create new task
+    if (post && post.clientPaidLink.status === "Neproveren") {
+      console.log("ide dalje");
+      // Check if group for checking post is already in project
+      let groupId = null;
+      for (const group of project.groups) {
+        if (group.title === "Post Checking") {
+          groupId = group._id;
+          break;
+        }
+      }
+      // If group is not already in project create new group
+      if (!groupId && !isLoading && !error) {
+        await sendRequest(
+          {
+            url: `/postTaskGroups`,
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: {
+              title: "Post Checking",
+              project: project._id,
+            },
+          },
+          (groupData) => {
+            console.log("group:", groupData);
+            groupId = groupData._id;
+            // when new group is created tasks are undefined, so i add them manually
+            groupData.tasks = [];
+            if (setProject) {
+              setProject((prevVal) => {
+                const newData = { ...prevVal };
+                newData.groups = [groupData, ...prevVal.groups];
+                return newData;
+              });
+            }
+          }
+        );
+      }
+      // Create new task for post checking
+      if (!isLoading && !error) {
+        await sendRequest(
+          {
+            url: `/postTasks`,
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: {
+              title: post.title,
+              dueTime: post.urgencyLevel,
+              post: post._id,
+              group: groupId,
+            },
+          },
+          (taskData) => {
+            console.log("task:", taskData);
+            // when new task is created messages are undefined, so i add them manually
+            taskData.messages = [];
+            if (setProject) {
+              setProject((prevVal) => {
+                const newData = { ...prevVal };
+                for (const group of newData.groups) {
+                  if (group._id === groupId) {
+                    group.tasks = [taskData, ...group.tasks];
+                    break;
+                  }
+                }
+                return newData;
+              });
+            }
+          }
+        );
+      }
+    }
   };
 
   return (
