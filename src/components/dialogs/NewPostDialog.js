@@ -32,7 +32,6 @@ const NewPostDialog = ({ title, open, setOpen, handleConfirm }) => {
   const theme = useTheme();
   const { isLoading: getWebsitesIsLoading, error: getWebsitesError, sendRequest: getWebsitesSendRequest } = useHttp();
   const { isLoading: getLinksSendIsLoading, error: getLinksSendError, sendRequest: getLinksSendRequest } = useHttp();
-  const { sendRequest: newLinkSendRequest } = useHttp();
   const [postTitle, setPostTitle] = useState("");
   const [website, setWebsite] = useState(null);
   const [websiteList, setWebsiteList] = useState(null);
@@ -86,7 +85,7 @@ const NewPostDialog = ({ title, open, setOpen, handleConfirm }) => {
         },
       },
       (websiteData) => {
-        console.log(websiteData);
+        console.log("websites:", websiteData);
         setWebsiteList(websiteData);
       }
     );
@@ -104,34 +103,6 @@ const NewPostDialog = ({ title, open, setOpen, handleConfirm }) => {
       }
     );
   }, [getWebsitesSendRequest, getLinksSendRequest]);
-
-  const confirmLinkDialogHandler = (url, client) => {
-    const trimmed = url.trim();
-    if (trimmed.length === 0 || !client) return;
-    const lastChar = trimmed.substring(trimmed.length - 1);
-    const filteredUrl = lastChar === "/" ? trimmed.substring(0, trimmed.length - 1) : trimmed;
-    newLinkSendRequest(
-      {
-        url: "/clientLinks",
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: {
-          url: filteredUrl,
-          client: client._id,
-        },
-      },
-      (linkData) => {
-        console.log(linkData);
-        setLinkList((prevVal) => {
-          return [linkData, ...prevVal];
-        });
-        setLink(linkData);
-      }
-    );
-    setOpenLinkDialog(false);
-  };
 
   return (
     <Box>
@@ -514,7 +485,7 @@ const NewPostDialog = ({ title, open, setOpen, handleConfirm }) => {
         </DialogActions>
       </Dialog>
       <NewWebsiteDialog title="Add New Website" open={openWebsiteDialog} setOpen={setOpenWebsiteDialog} setWebsite={setWebsite} setWebsiteList={setWebsiteList} />
-      <NewClientLinkDialog title="Add New Link" open={openLinkDialog} setOpen={setOpenLinkDialog} handleConfirm={confirmLinkDialogHandler} />
+      <NewClientLinkDialog title="Add New Link" open={openLinkDialog} setOpen={setOpenLinkDialog} setLink={setLink} setLinkList={setLinkList} />
     </Box>
   );
 };

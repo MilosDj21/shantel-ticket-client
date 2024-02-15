@@ -9,7 +9,7 @@ const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
 });
 
-const NewClientLinkDialog = ({ title, open, setOpen, handleConfirm }) => {
+const NewClientLinkDialog = ({ title, open, setOpen, setLink, setLinkList }) => {
   const theme = useTheme();
   const { isLoading, error, sendRequest } = useHttp();
   const [url, setUrl] = useState("");
@@ -23,20 +23,52 @@ const NewClientLinkDialog = ({ title, open, setOpen, handleConfirm }) => {
   };
 
   useEffect(() => {
-    sendRequest(
-      {
-        url: "/clients",
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
+    if (!isLoading) {
+      sendRequest(
+        {
+          url: "/clients",
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
         },
-      },
-      (clientData) => {
-        console.log("clients:", clientData);
-        setClientList(clientData);
-      }
-    );
+        (clientData) => {
+          console.log("clients:", clientData);
+          setClientList(clientData);
+        }
+      );
+    }
   }, [sendRequest]);
+
+  const createNewLinkHandler = async (url, client) => {
+    const trimmed = url.trim();
+    if (trimmed.length === 0 || !client) return;
+    const lastChar = trimmed.substring(trimmed.length - 1);
+    const filteredUrl = lastChar === "/" ? trimmed.substring(0, trimmed.length - 1) : trimmed;
+    if (!isLoading) {
+      sendRequest(
+        {
+          url: "/clientLinks",
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: {
+            url: filteredUrl,
+            client: client._id,
+          },
+        },
+        (linkData) => {
+          console.log("link:", linkData);
+          setLinkList((prevVal) => {
+            return [linkData, ...prevVal];
+          });
+          setLink(linkData);
+          setOpen(false);
+        }
+      );
+    }
+  };
 
   return (
     <Box>
@@ -180,7 +212,7 @@ const NewClientLinkDialog = ({ title, open, setOpen, handleConfirm }) => {
           </Button>
           <Button
             onClick={() => {
-              handleConfirm(url, client);
+              createNewLinkHandler(url, client);
               setUrl("");
               setClient(null);
             }}
