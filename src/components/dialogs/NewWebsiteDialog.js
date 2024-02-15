@@ -14,7 +14,7 @@ const NewWebsiteDialog = ({ title, open, setOpen, setWebsite, setWebsiteList }) 
   const [websiteUrl, setWebsiteUrl] = useState("");
   const [websiteCategory, setWebsiteCategory] = useState("Regularan");
 
-  const handleConfirm = (url, category) => {
+  const createNewWebsiteHandler = (url, category) => {
     const trimmed = url.trim();
     if (trimmed.length === 0) return;
     const lastChar = trimmed.substring(trimmed.length - 1);
@@ -160,7 +160,7 @@ const NewWebsiteDialog = ({ title, open, setOpen, setWebsite, setWebsiteList }) 
           </Button>
           <Button
             onClick={() => {
-              handleConfirm(websiteUrl, websiteCategory);
+              createNewWebsiteHandler(websiteUrl, websiteCategory);
               setWebsiteUrl("");
               setWebsiteCategory("Regularan");
             }}
