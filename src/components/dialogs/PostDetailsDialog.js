@@ -1,5 +1,9 @@
-import React from "react";
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, useTheme, Slide, Divider, Typography } from "@mui/material";
+import React, { useState, useEffect } from "react";
+import { Box, Button, Dialog, DialogActions, DialogContent, useTheme, Slide, Divider, Typography, Menu, MenuItem } from "@mui/material";
+import { ArrowDropDownOutlined } from "@mui/icons-material";
+
+import TextOrInput from "../TextOrInput";
+import useHttp from "../../hooks/use-http";
 
 const serverAddress = process.env.ENVIRONMENT === "production" ? process.env.REACT_APP_PROD_BASE_URL : process.env.REACT_APP_DEV_BASE_URL;
 
@@ -7,8 +11,30 @@ const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="left" ref={ref} {...props} />;
 });
 
-const PostDetailsDialog = ({ post, open, setOpen, handleConfirm }) => {
+const PostDetailsDialog = ({ post, setPost, open, setOpen, project, setProject }) => {
   const theme = useTheme();
+  const { isLoading, sendRequest } = useHttp();
+  const [users, setUsers] = useState([]);
+  const [userMenuAnchorEl, setUserMenuAnchorEl] = useState(null);
+  const [selectedUserRole, setSelectedUserRole] = useState(null);
+
+  const userMenuIsOpen = Boolean(userMenuAnchorEl);
+
+  useEffect(() => {
+    sendRequest(
+      {
+        url: "/users/",
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      },
+      (userData) => {
+        setUsers(userData);
+        console.log("users:", userData);
+      }
+    );
+  }, [sendRequest]);
 
   const getDate = (dateStr) => {
     const date = new Date(dateStr);
@@ -19,6 +45,78 @@ const PostDetailsDialog = ({ post, open, setOpen, handleConfirm }) => {
     const minutes = String(date.getMinutes()).padStart(2, "0");
     const seconds = String(date.getSeconds()).padStart(2, "0");
     return `${day}-${month}-${year} ${hour}:${minutes}:${seconds}`;
+  };
+
+  const updatePostHandler = async (text, fieldToUpdate, tableToUpdate) => {
+    const id = tableToUpdate === "postRequests" ? post._id : tableToUpdate === "websites" ? post.website._id : post.clientPaidLink._id;
+    const body = {};
+    body[fieldToUpdate] = text;
+    // If previous request is not done set input text to previous value
+    if (isLoading) return true;
+    await sendRequest(
+      {
+        url: `/${tableToUpdate}/${id}`,
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body,
+      },
+      (data) => {
+        console.log(data);
+      }
+    );
+    // Refresh project details
+    await sendRequest(
+      {
+        url: `/projects/${project._id}`,
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      },
+      (projectData) => {
+        console.log("project:", projectData);
+        setProject(projectData);
+      }
+    );
+    return false;
+  };
+
+  const openUserMenuHandler = (event) => {
+    setUserMenuAnchorEl(event.currentTarget);
+  };
+
+  const setUserMenuItemHandler = async (user) => {
+    if (isLoading) return;
+    const body = {};
+    body[selectedUserRole] = user._id;
+    sendRequest(
+      {
+        url: `/postRequests/${post._id}`,
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body,
+      },
+      (postData) => {
+        console.log("post:", postData);
+        setPost(postData);
+        setUserMenuAnchorEl(null);
+        setProject((prevVal) => {
+          const tempList = [];
+          const newData = { ...prevVal };
+          for (const p of prevVal.postRequests) {
+            if (p._id !== postData._id) {
+              tempList.push(p);
+            }
+          }
+          newData.postRequests = [postData, ...tempList];
+          return newData;
+        });
+      }
+    );
   };
 
   const getProgress = (progress) => {
@@ -73,98 +171,129 @@ const PostDetailsDialog = ({ post, open, setOpen, handleConfirm }) => {
             },
           }}
         >
-          <DialogTitle
-            sx={{
-              color: theme.palette.grey[200],
-              backgroundColor: theme.palette.background.default,
-              fontSize: "20px",
-              fontWeight: 800,
-              p: "1.5rem",
-            }}
-            id="alert-dialog-title"
-          >
-            {post.title}
-          </DialogTitle>
           <DialogContent
             sx={{
               backgroundColor: theme.palette.background.default,
               display: "flex",
-              alignItems: "center",
+              justifyContent: "center",
+              flexDirection: "column",
             }}
           >
+            {/* Title */}
+            <Box display="flex" justifyContent="center" pb="3rem">
+              <Typography variant="h2">{post.title}</Typography>
+            </Box>
+            {/* Content */}
             <Box display="flex" flexDirection="column" p="2rem" backgroundColor={theme.palette.background.light} borderRadius="5px" width="100%">
-              <Box display="flex" gap="1rem">
+              <Box display="flex" gap="1rem" alignItems="center">
                 <Typography color={theme.palette.grey[500]}>Website:</Typography>
-                <Typography color={theme.palette.grey[200]}>{post.website.url}</Typography>
+                <TextOrInput fontSize="14px" textValue={post.website.url} callback={updatePostHandler} fieldToUpdate="url" tableToUpdate="websites" />
               </Box>
               <Divider sx={{ borderColor: theme.palette.grey[700], mt: "1rem", mb: "1rem" }} />
-              <Box display="flex" gap="1rem">
+              <Box display="flex" gap="1rem" alignItems="center">
                 <Typography color={theme.palette.grey[500]}>Anchor:</Typography>
-                <Typography color={theme.palette.grey[200]}>{post.anchorKeyword}</Typography>
+                {/* <Typography color={theme.palette.grey[200]}>{post.anchorKeyword}</Typography> */}
+                <TextOrInput fontSize="14px" textValue={post.anchorKeyword} callback={updatePostHandler} fieldToUpdate="anchorKeyword" tableToUpdate="postRequests" />
               </Box>
               <Divider sx={{ borderColor: theme.palette.grey[700], mt: "1rem", mb: "1rem" }} />
               <Box display="flex" gap="3rem">
-                <Box display="flex" gap="1rem">
+                <Box display="flex" gap="1rem" alignItems="center">
                   <Typography color={theme.palette.grey[500]}>Client Link:</Typography>
-                  <Typography color={theme.palette.grey[200]}>{post.clientPaidLink.url}</Typography>
+                  {/* <Typography color={theme.palette.grey[200]}>{post.clientPaidLink.url}</Typography> */}
+                  <TextOrInput fontSize="14px" textValue={post.clientPaidLink.url} callback={updatePostHandler} fieldToUpdate="url" tableToUpdate="clientLinks" />
                 </Box>
-                <Box display="flex" gap="1rem">
+                <Box display="flex" gap="1rem" alignItems="center">
                   <Typography color={theme.palette.grey[500]}>Link Status:</Typography>
                   <Typography color={theme.palette.grey[200]}>{post.clientPaidLink.status}</Typography>
                 </Box>
               </Box>
               <Divider sx={{ borderColor: theme.palette.grey[700], mt: "1rem", mb: "1rem" }} />
-              <Box display="flex" gap="1rem">
+              <Box display="flex" gap="1rem" alignItems="center">
                 <Typography color={theme.palette.grey[500]}>Post Category:</Typography>
-                <Typography color={theme.palette.grey[200]}>{post.postCategory}</Typography>
+                {/* <Typography color={theme.palette.grey[200]}>{post.postCategory}</Typography> */}
+                <TextOrInput fontSize="14px" textValue={post.postCategory} callback={updatePostHandler} fieldToUpdate="postCategory" tableToUpdate="postRequests" />
               </Box>
               <Divider sx={{ borderColor: theme.palette.grey[700], mt: "1rem", mb: "1rem" }} />
-              <Box display="flex" gap="1rem">
+              <Box display="flex" gap="1rem" alignItems="center">
                 <Typography color={theme.palette.grey[500]}>Progress Level:</Typography>
                 <Typography color={theme.palette.grey[200]}>{getProgress(post.progressLevel)}</Typography>
               </Box>
               <Divider sx={{ borderColor: theme.palette.grey[700], mt: "1rem", mb: "1rem" }} />
-              <Box display="flex" gap="1rem">
+              <Box display="flex" gap="1rem" alignItems="center">
                 <Typography color={theme.palette.grey[500]}>Urgency Level:</Typography>
-                <Typography color={theme.palette.grey[200]}>{post.urgencyLevel}</Typography>
+                {/* <Typography color={theme.palette.grey[200]}>{post.urgencyLevel}</Typography> */}
+                <TextOrInput fontSize="14px" textValue={post.urgencyLevel} callback={updatePostHandler} fieldToUpdate="urgencyLevel" tableToUpdate="postRequests" />
               </Box>
               <Divider sx={{ borderColor: theme.palette.grey[700], mt: "1rem", mb: "1rem" }} />
-              <Box display="flex" gap="1rem">
+              <Box display="flex" gap="1rem" alignItems="center">
                 <Typography color={theme.palette.grey[500]}>Word Number:</Typography>
-                <Typography color={theme.palette.grey[200]}>{post.wordNum}</Typography>
+                {/* <Typography color={theme.palette.grey[200]}>{post.wordNum}</Typography> */}
+                <TextOrInput fontSize="14px" textValue={post.wordNum} callback={updatePostHandler} fieldToUpdate="wordNum" tableToUpdate="postRequests" />
               </Box>
               <Divider sx={{ borderColor: theme.palette.grey[700], mt: "1rem", mb: "1rem" }} />
               <Box display="flex" gap="3rem">
                 <Box display="flex" gap="1rem" alignItems="center">
                   <Typography color={theme.palette.grey[500]}>Writer:</Typography>
-                  {post.copywriter && (
-                    <Box
-                      component="img"
-                      alt="profile"
-                      src={serverAddress + "/" + post.copywriter.profileImage}
-                      crossOrigin="use-credentials"
-                      height="32px"
-                      width="32px"
-                      borderRadius="50%"
-                      sx={{ objectFit: "cover" }}
-                    />
-                  )}
+                  <Button
+                    onClick={(event) => {
+                      setSelectedUserRole("copywriter");
+                      openUserMenuHandler(event);
+                    }}
+                  >
+                    {post.copywriter && (
+                      <Box
+                        component="img"
+                        alt="profile"
+                        src={serverAddress + "/" + post.copywriter.profileImage}
+                        crossOrigin="use-credentials"
+                        height="32px"
+                        width="32px"
+                        borderRadius="50%"
+                        sx={{ objectFit: "cover" }}
+                      />
+                    )}
+                    <ArrowDropDownOutlined sx={{ color: theme.palette.secondary[300], fontSize: "25px" }} />
+                  </Button>
                 </Box>
                 <Box display="flex" gap="1rem" alignItems="center">
                   <Typography color={theme.palette.grey[500]}>Editor:</Typography>
-                  {post.editor && (
-                    <Box
-                      component="img"
-                      alt="profile"
-                      src={serverAddress + "/" + post.editor.profileImage}
-                      crossOrigin="use-credentials"
-                      height="32px"
-                      width="32px"
-                      borderRadius="50%"
-                      sx={{ objectFit: "cover" }}
-                    />
-                  )}
+
+                  <Button
+                    onClick={(event) => {
+                      setSelectedUserRole("editor");
+                      openUserMenuHandler(event);
+                    }}
+                  >
+                    {post.editor && (
+                      <Box
+                        component="img"
+                        alt="profile"
+                        src={serverAddress + "/" + post.editor.profileImage}
+                        crossOrigin="use-credentials"
+                        height="32px"
+                        width="32px"
+                        borderRadius="50%"
+                        sx={{ objectFit: "cover" }}
+                      />
+                    )}
+                    <ArrowDropDownOutlined sx={{ color: theme.palette.secondary[300], fontSize: "25px" }} />
+                  </Button>
                 </Box>
+                <Menu anchorEl={userMenuAnchorEl} open={userMenuIsOpen} onClose={() => setUserMenuAnchorEl(null)} anchorOrigin={{ vertical: "bottom", horizontal: "center" }}>
+                  {users.map((u) => {
+                    return (
+                      <MenuItem
+                        key={u._id}
+                        onClick={() => {
+                          setUserMenuItemHandler(u);
+                        }}
+                      >
+                        <Typography mr="0.4rem">{u.firstName}</Typography>
+                        <Typography>{u.lastName}</Typography>
+                      </MenuItem>
+                    );
+                  })}
+                </Menu>
               </Box>
               <Divider sx={{ borderColor: theme.palette.grey[700], mt: "1rem", mb: "1rem" }} />
               <Box display="flex" gap="1rem">
@@ -178,7 +307,7 @@ const PostDetailsDialog = ({ post, open, setOpen, handleConfirm }) => {
               </Box>
             </Box>
           </DialogContent>
-          <DialogActions
+          {/* <DialogActions
             sx={{
               backgroundColor: theme.palette.background.default,
               p: "0 1.5rem 1.5rem 0",
@@ -188,9 +317,6 @@ const PostDetailsDialog = ({ post, open, setOpen, handleConfirm }) => {
               onClick={() => {
                 // setEmail("");
                 // setOpen(false);
-              }}
-              sx={{
-                color: "white",
               }}
             >
               Cancel
@@ -204,7 +330,7 @@ const PostDetailsDialog = ({ post, open, setOpen, handleConfirm }) => {
             >
               Save
             </Button>
-          </DialogActions>
+          </DialogActions> */}
         </Dialog>
       )}
     </Box>
