@@ -341,7 +341,8 @@ const ProjectDetails = () => {
             onClick={(e) => {
               e.stopPropagation();
               buttonClickHandle(params.row);
-            }}>
+            }}
+          >
             {buttonText}
           </Button>
         ) : buttonText.length > 0 ? (
@@ -350,7 +351,8 @@ const ProjectDetails = () => {
             sx={{
               color: "#000 !important",
               backgroundColor: theme.palette.grey[600],
-            }}>
+            }}
+          >
             {buttonText}
           </Button>
         ) : (
@@ -370,7 +372,8 @@ const ProjectDetails = () => {
               <IconButton
                 onClick={() => {
                   setOpenNewPostDialog(true);
-                }}>
+                }}
+              >
                 <Add
                   sx={{
                     color: theme.palette.grey.main,
@@ -422,7 +425,8 @@ const ProjectDetails = () => {
             // "& .closed-project": {
             //   backgroundColor: "#913232",
             // },
-          }}>
+          }}
+        >
           <DataGrid
             loading={isLoading || !data}
             getRowId={(row) => row._id}
@@ -446,7 +450,7 @@ const ProjectDetails = () => {
         </Box>
       )}
       <NewPostDialog title="Add New Post" open={openNewPostDialog} setOpen={setOpenNewPostDialog} project={data} setProject={setData} />
-      <PostDetailsDialog post={selectedPost} open={openSelectedPostDialog} setOpen={setOpenSelectedPostDialog} handleConfirm={confirmSelectedPostDialogHandle} />
+      <PostDetailsDialog post={selectedPost} setPost={setSelectedPost} open={openSelectedPostDialog} setOpen={setOpenSelectedPostDialog} project={data} setProject={setData} />
     </Fragment>
   );
 };
