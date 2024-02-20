@@ -81,6 +81,7 @@ const PostDetailsDialog = ({ post, setPost, open, setOpen, project, setProject }
         for (const p of projectData.postRequests) {
           if (p._id === post._id) {
             setPost(p);
+            break;
           }
         }
       }
@@ -180,12 +181,13 @@ const PostDetailsDialog = ({ post, setPost, open, setOpen, project, setProject }
             sx={{
               backgroundColor: theme.palette.background.default,
               display: "flex",
-              justifyContent: "center",
+              justifyContent: "start",
               flexDirection: "column",
+              pt: "0",
             }}
           >
             {/* Title */}
-            <Box display="flex" justifyContent="center" pb="3rem">
+            <Box display="flex" justifyContent="center" p="3rem 0">
               <Typography variant="h2">{post.title}</Typography>
             </Box>
             {/* Content */}
@@ -339,7 +341,7 @@ const PostDetailsDialog = ({ post, setPost, open, setOpen, project, setProject }
           <DialogActions
             sx={{
               backgroundColor: theme.palette.background.default,
-              p: "0 1.5rem 1.5rem 0",
+              p: "1.5rem",
             }}
           >
             <Button
