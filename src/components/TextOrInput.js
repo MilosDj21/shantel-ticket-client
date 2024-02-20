@@ -3,8 +3,8 @@ import { InputBase, useTheme } from "@mui/material";
 
 const TextOrInput = ({ fontSize, textValue, callback, fieldToUpdate = null, tableToUpdate = null }) => {
   const theme = useTheme();
-  const [text, setText] = useState(textValue);
-  const [tempVal, settempVal] = useState(textValue.toString().slice());
+  const [text, setText] = useState(textValue ? textValue : "");
+  const [tempVal, setTempVal] = useState(textValue ? textValue.toString().slice() : "");
 
   const onBlurHandler = async () => {
     if (fieldToUpdate && tableToUpdate) {
