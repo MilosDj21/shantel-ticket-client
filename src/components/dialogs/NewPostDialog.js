@@ -107,7 +107,11 @@ const NewPostDialog = ({ title, open, setOpen, project, setProject = null }) => 
 
   const createPostHandler = async () => {
     let post = null;
-    if (!postTitle || !website || !postCategory || !anchor || !link || !urgency || !wordNum) return;
+    let progressLevel = null;
+    if (link.status === "Odobren" || link.status === "Semafor" || link.status === "Pijaca") {
+      progressLevel = "doneCheck";
+    }
+    if (!postTitle || !website || !postCategory || !anchor || !link || !urgency || !wordNum || link.status === "Odbijen") return;
     // Save new post
     await sendRequest(
       {
@@ -120,7 +124,8 @@ const NewPostDialog = ({ title, open, setOpen, project, setProject = null }) => 
           title: postTitle,
           website: website._id,
           postCategory,
-          anchor,
+          progressLevel,
+          anchorKeyword: anchor,
           clientPaidLink: link._id,
           urgencyLevel: urgency,
           wordNum,
@@ -142,11 +147,10 @@ const NewPostDialog = ({ title, open, setOpen, project, setProject = null }) => 
     );
     // If post is saved ok, and link in that post is not checked create new task
     if (post && post.clientPaidLink.status === "Neproveren") {
-      console.log("ide dalje");
       // Check if group for checking post is already in project
       let groupId = null;
       for (const group of project.groups) {
-        if (group.title === "Post Checking") {
+        if (group.title === "Website Check") {
           groupId = group._id;
           break;
         }
@@ -161,7 +165,7 @@ const NewPostDialog = ({ title, open, setOpen, project, setProject = null }) => 
               "Content-Type": "application/json",
             },
             body: {
-              title: "Post Checking",
+              title: "Website Check",
               project: project._id,
             },
           },
@@ -181,7 +185,7 @@ const NewPostDialog = ({ title, open, setOpen, project, setProject = null }) => 
         );
       }
       // Create new task for post checking
-      if (!isLoading && !error) {
+      if (!isLoading && !error && groupId) {
         await sendRequest(
           {
             url: `/postTasks`,
@@ -234,7 +238,8 @@ const NewPostDialog = ({ title, open, setOpen, project, setProject = null }) => 
           sx: {
             borderRadius: "9px",
           },
-        }}>
+        }}
+      >
         <DialogTitle
           sx={{
             color: theme.palette.grey[200],
@@ -243,13 +248,15 @@ const NewPostDialog = ({ title, open, setOpen, project, setProject = null }) => 
             textAlign: "center",
             p: "1.5rem",
           }}
-          id="alert-dialog-title">
+          id="alert-dialog-title"
+        >
           {title}
         </DialogTitle>
         <DialogContent
           sx={{
             backgroundColor: theme.palette.background.default,
-          }}>
+          }}
+        >
           <Box display="flex" flexDirection="column" alignItems="center" gap="1.5rem" p="3rem 3rem 3rem 3rem" backgroundColor="rgba(17, 18, 20, 0.3)" borderRadius="9px" width="100%">
             {/* Title */}
             <Box backgroundColor={theme.palette.background.light} display="flex" alignItems="center" borderRadius="9px" gap="1rem" p="0.1rem 1.5rem" width="100%">
@@ -289,7 +296,8 @@ const NewPostDialog = ({ title, open, setOpen, project, setProject = null }) => 
                     color: theme.palette.grey[700],
                     p: "0.2rem 0",
                     fontSize: "18px",
-                  }}>
+                  }}
+                >
                   Website
                 </Typography>
                 {!getWebsitesIsLoading && !getWebsitesError && websiteList && (
@@ -323,7 +331,8 @@ const NewPostDialog = ({ title, open, setOpen, project, setProject = null }) => 
                   <IconButton
                     onClick={() => {
                       setOpenWebsiteDialog(true);
-                    }}>
+                    }}
+                  >
                     <Add
                       sx={{
                         color: theme.palette.grey.main,
@@ -354,7 +363,8 @@ const NewPostDialog = ({ title, open, setOpen, project, setProject = null }) => 
                   color: theme.palette.grey[700],
                   p: "0.2rem 0",
                   fontSize: "18px",
-                }}>
+                }}
+              >
                 Post Type
               </Typography>
               <FormControl
@@ -363,7 +373,8 @@ const NewPostDialog = ({ title, open, setOpen, project, setProject = null }) => 
                   "& .MuiFormControl-root": {
                     width: "100%",
                   },
-                }}>
+                }}
+              >
                 <Select
                   value={postCategory}
                   onChange={(event) => setPostCategory(event.target.value)}
@@ -375,7 +386,8 @@ const NewPostDialog = ({ title, open, setOpen, project, setProject = null }) => 
                     "& .MuiSvgIcon-root": {
                       color: theme.palette.grey[200],
                     },
-                  }}>
+                  }}
+                >
                   <MenuItem value="Placeni">Placeni</MenuItem>
                   <MenuItem value="Insercija">Insercija</MenuItem>
                   <MenuItem value="Wayback">Wayback</MenuItem>
@@ -423,7 +435,8 @@ const NewPostDialog = ({ title, open, setOpen, project, setProject = null }) => 
                     color: theme.palette.grey[700],
                     p: "0.2rem 0",
                     fontSize: "18px",
-                  }}>
+                  }}
+                >
                   Client Link
                 </Typography>
                 {!getLinksSendIsLoading && !getLinksSendError && linkList && (
@@ -458,7 +471,8 @@ const NewPostDialog = ({ title, open, setOpen, project, setProject = null }) => 
                     color: linkStatusColor,
                     p: "0.2rem 0",
                     fontSize: "18px",
-                  }}>
+                  }}
+                >
                   {link && link.status}
                 </Typography>
               </Box>
@@ -467,7 +481,8 @@ const NewPostDialog = ({ title, open, setOpen, project, setProject = null }) => 
                   <IconButton
                     onClick={() => {
                       setOpenLinkDialog(true);
-                    }}>
+                    }}
+                  >
                     <Add
                       sx={{
                         color: theme.palette.grey.main,
@@ -546,7 +561,8 @@ const NewPostDialog = ({ title, open, setOpen, project, setProject = null }) => 
                   color: theme.palette.grey[700],
                   p: "0.2rem 0",
                   fontSize: "18px",
-                }}>
+                }}
+              >
                 Client has text:
               </Typography>
               <FormControl
@@ -555,7 +571,8 @@ const NewPostDialog = ({ title, open, setOpen, project, setProject = null }) => 
                   "& .MuiFormControl-root": {
                     width: "100%",
                   },
-                }}>
+                }}
+              >
                 <Select
                   value={clientHasText}
                   onChange={(event) => setClientHasText(event.target.value)}
@@ -567,7 +584,8 @@ const NewPostDialog = ({ title, open, setOpen, project, setProject = null }) => 
                     "& .MuiSvgIcon-root": {
                       color: theme.palette.grey[200],
                     },
-                  }}>
+                  }}
+                >
                   <MenuItem value={true}>Yes</MenuItem>
                   <MenuItem value={false}>No</MenuItem>
                 </Select>
@@ -579,21 +597,24 @@ const NewPostDialog = ({ title, open, setOpen, project, setProject = null }) => 
           sx={{
             backgroundColor: theme.palette.background.default,
             p: "0 1.5rem 1.5rem 0",
-          }}>
+          }}
+        >
           <Button
             onClick={() => {
               setOpen(false);
             }}
             sx={{
               color: "white",
-            }}>
+            }}
+          >
             Cancel
           </Button>
           <Button
             onClick={() => {
               createPostHandler();
             }}
-            autoFocus>
+            autoFocus
+          >
             Save
           </Button>
         </DialogActions>
