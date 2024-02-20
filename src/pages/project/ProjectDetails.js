@@ -20,11 +20,8 @@ const ProjectDetails = () => {
   const isNonMobile = useMediaQuery("(min-width: 600px)");
   const userId = useSelector((state) => state.userId);
   const { projectId } = useParams();
-  const { isLoading, sendRequest } = useHttp();
+  const { isLoading, error, sendRequest } = useHttp();
   const { sendRequest: saveTitleSendRequest } = useHttp();
-  const { sendRequest: changeProgressSendRequest } = useHttp();
-  const { sendRequest: createGroupSendRequest } = useHttp();
-  const { sendRequest: createTaskSendRequest } = useHttp();
   const [data, setData] = useState("");
   const [selectedPost, setSelectedPost] = useState(null);
   const [openNewPostDialog, setOpenNewPostDialog] = useState(false);
@@ -53,13 +50,13 @@ const ProjectDetails = () => {
     console.log(params.row);
     setSelectedPost(params.row);
     setOpenSelectedPostDialog(true);
-    // navigate(`/postRequests/${params.id}`);
   };
 
   const buttonClickHandle = async (params) => {
     let nextStep = "";
     let groupTitle = "";
     let groupId = null;
+    let taskId = null;
     if (params.progressLevel === "doneCheck") {
       nextStep = "pendingWrite";
       groupTitle = "Article Writing";
@@ -70,12 +67,43 @@ const ProjectDetails = () => {
     for (const group of data.groups) {
       if (group.title === groupTitle) {
         groupId = group._id;
+        break;
       }
     }
 
-    const createTask = (finalGroupId) => {
-      // create new task for next step
-      createTaskSendRequest(
+    // If group is not already in project create new group
+    if (!groupId && !isLoading && !error) {
+      // create new task group for next step
+      await sendRequest(
+        {
+          url: `/postTaskGroups`,
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: {
+            title: groupTitle,
+            project: projectId,
+          },
+        },
+        (groupData) => {
+          console.log("group:", groupData);
+          groupId = groupData._id;
+          // // when new group is created tasks are undefined, so i add them manually
+          // groupData.tasks = [];
+          // // set new group data for project
+          // setData((prevVal) => {
+          //   const newData = { ...prevVal };
+          //   newData.groups = [groupData, ...prevVal.groups];
+          //   return newData;
+          // });
+        }
+      );
+    }
+
+    // Create new task for next step
+    if (groupId && !isLoading && !error) {
+      await sendRequest(
         {
           url: `/postTasks`,
           method: "POST",
@@ -86,96 +114,91 @@ const ProjectDetails = () => {
             title: params.title,
             dueTime: params.urgencyLevel,
             post: params._id,
-            group: finalGroupId,
+            group: groupId,
           },
         },
         (taskData) => {
-          // TODO: privremeno resenje posto kad se kreira novi ne povlaci poruke
-          taskData.messages = [];
-          for (const group of data.groups) {
-            if (group._id === finalGroupId) {
-              group.tasks.push(taskData);
-            }
-          }
           console.log("task:", taskData);
+          taskId = taskData._id;
+          // // when new task is created messages are undefined, so i add them manually
+          // taskData.messages = [];
+          // // set new task data for project
+          // setData((prevVal) => {
+          //   const newData = { ...prevVal };
+          //   for (const group of newData.groups) {
+          //     if (group._id === groupId) {
+          //       group.tasks = [taskData, ...group.tasks];
+          //       break;
+          //     }
+          //   }
+          //   return newData;
+          // });
         }
       );
-    };
+    }
 
-    // change progress level
-    changeProgressSendRequest(
-      {
-        url: `/postRequests/${params._id}`,
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
+    // Change progress level if group and task are successfully created
+    if (groupId && taskId && !isLoading && !error) {
+      await sendRequest(
+        {
+          url: `/postRequests/${params._id}`,
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: {
+            progressLevel: nextStep,
+          },
         },
-        body: {
-          progressLevel: nextStep,
-        },
-      },
-      (postData) => {
-        console.log("post", postData);
-        for (const post of data.postRequests) {
-          if (post._id === params._id) {
-            post.progressLevel = nextStep;
-          }
+        (postData) => {
+          console.log("post", postData);
+          // for (const post of data.postRequests) {
+          //   if (post._id === params._id) {
+          //     post.progressLevel = nextStep;
+          //   }
+          // }
         }
-        // if group is not already in project create new group
-        if (!groupId) {
-          // create new task group for next step
-          createGroupSendRequest(
-            {
-              url: `/postTaskGroups`,
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: {
-                title: groupTitle,
-                project: projectId,
-              },
-            },
-            (groupData) => {
-              console.log("🚀 ~ buttonClickHandle ~ groupData:", groupData);
-              // TODO: privremeno resenje posto kad se kreira novi ne povlaci taskove
-              // TODO: kada na bekendu namestis da povuce i taskove proveri da li onda radi ovako
-              if (!groupData.tasks) {
-                groupData.tasks = [];
-                data.groups.push(groupData);
-              }
-              console.log("group:", groupData);
-              // create new task for next step
-              createTask(groupData._id);
-            }
-          );
-        } else {
-          createTask(groupId);
-        }
-      }
-    );
+      );
+    }
 
-    console.log(params);
+    // Refresh project details
+    if (!isLoading && !error) {
+      await sendRequest(
+        {
+          url: `/projects/${projectId}`,
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        },
+        (projectData) => {
+          console.log("project:", projectData);
+          setData(projectData);
+        }
+      );
+    }
   };
 
   const saveTitleHandler = async (text) => {
     // save updated project title
-    saveTitleSendRequest(
-      {
-        url: `/projects/${projectId}`,
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
+    if (!isLoading && !error) {
+      await sendRequest(
+        {
+          url: `/projects/${projectId}`,
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: {
+            title: text,
+          },
         },
-        body: {
-          title: text,
-        },
-      },
-      (projectData) => {
-        console.log(projectData);
-      }
-    );
-    console.log(text);
+        (projectData) => {
+          console.log(projectData);
+        }
+      );
+      console.log(text);
+    }
   };
 
   const columns = [
@@ -338,6 +361,7 @@ const ProjectDetails = () => {
         return ready > 0 ? (
           <Button
             variant="contained"
+            disabled={isLoading}
             onClick={(e) => {
               e.stopPropagation();
               buttonClickHandle(params.row);
