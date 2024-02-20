@@ -13,7 +13,7 @@ const Transition = React.forwardRef(function Transition(props, ref) {
 
 const PostDetailsDialog = ({ post, setPost, open, setOpen, project, setProject }) => {
   const theme = useTheme();
-  const { isLoading, sendRequest } = useHttp();
+  const { isLoading, error, sendRequest } = useHttp();
   const [users, setUsers] = useState([]);
   const [userMenuAnchorEl, setUserMenuAnchorEl] = useState(null);
   const [selectedUserRole, setSelectedUserRole] = useState(null);
@@ -97,32 +97,107 @@ const PostDetailsDialog = ({ post, setPost, open, setOpen, project, setProject }
     if (isLoading) return;
     const body = {};
     body[selectedUserRole] = user._id;
-    sendRequest(
-      {
-        url: `/postRequests/${post._id}`,
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
+    if (!isLoading && !error) {
+      await sendRequest(
+        {
+          url: `/postRequests/${post._id}`,
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body,
         },
-        body,
-      },
-      (postData) => {
-        console.log("post:", postData);
-        setPost(postData);
-        setUserMenuAnchorEl(null);
-        setProject((prevVal) => {
-          const tempList = [];
-          const newData = { ...prevVal };
-          for (const p of prevVal.postRequests) {
-            if (p._id !== postData._id) {
-              tempList.push(p);
+        (postData) => {
+          console.log("post:", postData);
+          setPost(postData);
+          setUserMenuAnchorEl(null);
+          // setProject((prevVal) => {
+          //   const tempList = [];
+          //   const newData = { ...prevVal };
+          //   for (const p of prevVal.postRequests) {
+          //     if (p._id !== postData._id) {
+          //       tempList.push(p);
+          //     }
+          //   }
+          //   newData.postRequests = [postData, ...tempList];
+          //   return newData;
+          // });
+        }
+      );
+    }
+    // Update assigned user in task
+    if (!isLoading && !error) {
+      let taskId = null;
+      let assignedUserId = null;
+      for (const t of post.tasks) {
+        // TODO: ne radi trenutno, uvek isti task menja, proveriti
+        if (t.group.title === "Article Writing") {
+          taskId = t._id;
+          if (post.copywriter) assignedUserId = post.copywriter._id;
+          console.log("writer", post.copywriter._id);
+          break;
+        } else if (t.group.title === "Post Publishing") {
+          taskId = t._id;
+          if (post.editor) assignedUserId = post.editor._id;
+          console.log("editor", post.editor._id);
+          break;
+        }
+      }
+      if (taskId && assignedUserId) {
+        await sendRequest(
+          {
+            url: `/postTasks/${taskId}`,
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: {
+              assignedUser: assignedUserId,
+            },
+          },
+          (taskData) => {
+            console.log("task:", taskData);
+            // setProject((prevVal) => {
+            //   let tempList = [];
+            //   const newData = { ...prevVal };
+            //   for (const p of prevVal.postRequests) {
+            //     tempList = [];
+            //     for(const t of p.tasks){
+            //       if (t._id !== taskData._id) {
+            //         tempList.push(t);
+            //       }
+            //     }
+
+            //   }
+            //   newData.postRequests = [taskData, ...tempList];
+            //   return newData;
+            // });
+          }
+        );
+      }
+    }
+    // Refresh project details
+    if (!isLoading && !error) {
+      await sendRequest(
+        {
+          url: `/projects/${project._id}`,
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        },
+        (projectData) => {
+          console.log("project:", projectData);
+          setProject(projectData);
+          for (const p of projectData.postRequests) {
+            if (p._id === post._id) {
+              setPost(p);
+              break;
             }
           }
-          newData.postRequests = [postData, ...tempList];
-          return newData;
-        });
-      }
-    );
+        }
+      );
+    }
   };
 
   const getProgress = (progress) => {
@@ -338,7 +413,7 @@ const PostDetailsDialog = ({ post, setPost, open, setOpen, project, setProject }
               </Box>
             </Box>
           </DialogContent>
-          <DialogActions
+          {/* <DialogActions
             sx={{
               backgroundColor: theme.palette.background.default,
               p: "1.5rem",
@@ -363,7 +438,7 @@ const PostDetailsDialog = ({ post, setPost, open, setOpen, project, setProject }
             >
               Next Step
             </Button>
-          </DialogActions>
+          </DialogActions> */}
         </Dialog>
       )}
     </Box>
