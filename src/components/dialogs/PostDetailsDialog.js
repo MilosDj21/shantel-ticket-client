@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Box, Button, Dialog, DialogActions, DialogContent, useTheme, Slide, Divider, Typography, Menu, MenuItem } from "@mui/material";
+import { Box, Button, Dialog, DialogActions, DialogContent, useTheme, Slide, Divider, Typography, Menu, MenuItem, FormControl, Select } from "@mui/material";
 import { ArrowDropDownOutlined } from "@mui/icons-material";
 
 import TextOrInput from "../TextOrInput";
@@ -78,6 +78,11 @@ const PostDetailsDialog = ({ post, setPost, open, setOpen, project, setProject }
       (projectData) => {
         console.log("project:", projectData);
         setProject(projectData);
+        for (const p of projectData.postRequests) {
+          if (p._id === post._id) {
+            setPost(p);
+          }
+        }
       }
     );
     return false;
@@ -210,8 +215,34 @@ const PostDetailsDialog = ({ post, setPost, open, setOpen, project, setProject }
               <Divider sx={{ borderColor: theme.palette.grey[700], mt: "1rem", mb: "1rem" }} />
               <Box display="flex" gap="1rem" alignItems="center">
                 <Typography color={theme.palette.grey[500]}>Post Category:</Typography>
-                {/* <Typography color={theme.palette.grey[200]}>{post.postCategory}</Typography> */}
-                <TextOrInput fontSize="14px" textValue={post.postCategory} callback={updatePostHandler} fieldToUpdate="postCategory" tableToUpdate="postRequests" />
+                <FormControl
+                  variant="standard"
+                  sx={{
+                    "& .MuiFormControl-root": {
+                      width: "100%",
+                    },
+                  }}
+                >
+                  <Select
+                    value={post.postCategory}
+                    onChange={(event) => updatePostHandler(event.target.value, "postCategory", "postRequests")}
+                    sx={{
+                      "::before": {
+                        borderBottom: `1px solid ${theme.palette.grey[200]}`,
+                      },
+                      color: theme.palette.grey[500],
+                      "& .MuiSvgIcon-root": {
+                        color: theme.palette.grey[200],
+                      },
+                    }}
+                  >
+                    <MenuItem value="Placeni">Placeni</MenuItem>
+                    <MenuItem value="Insercija">Insercija</MenuItem>
+                    <MenuItem value="Wayback">Wayback</MenuItem>
+                    <MenuItem value="Redovni">Redovni</MenuItem>
+                    <MenuItem value="Ostalo">Ostalo</MenuItem>
+                  </Select>
+                </FormControl>
               </Box>
               <Divider sx={{ borderColor: theme.palette.grey[700], mt: "1rem", mb: "1rem" }} />
               <Box display="flex" gap="1rem" alignItems="center">
@@ -221,13 +252,11 @@ const PostDetailsDialog = ({ post, setPost, open, setOpen, project, setProject }
               <Divider sx={{ borderColor: theme.palette.grey[700], mt: "1rem", mb: "1rem" }} />
               <Box display="flex" gap="1rem" alignItems="center">
                 <Typography color={theme.palette.grey[500]}>Urgency Level:</Typography>
-                {/* <Typography color={theme.palette.grey[200]}>{post.urgencyLevel}</Typography> */}
                 <TextOrInput fontSize="14px" textValue={post.urgencyLevel} callback={updatePostHandler} fieldToUpdate="urgencyLevel" tableToUpdate="postRequests" />
               </Box>
               <Divider sx={{ borderColor: theme.palette.grey[700], mt: "1rem", mb: "1rem" }} />
               <Box display="flex" gap="1rem" alignItems="center">
                 <Typography color={theme.palette.grey[500]}>Word Number:</Typography>
-                {/* <Typography color={theme.palette.grey[200]}>{post.wordNum}</Typography> */}
                 <TextOrInput fontSize="14px" textValue={post.wordNum} callback={updatePostHandler} fieldToUpdate="wordNum" tableToUpdate="postRequests" />
               </Box>
               <Divider sx={{ borderColor: theme.palette.grey[700], mt: "1rem", mb: "1rem" }} />
@@ -307,7 +336,7 @@ const PostDetailsDialog = ({ post, setPost, open, setOpen, project, setProject }
               </Box>
             </Box>
           </DialogContent>
-          {/* <DialogActions
+          <DialogActions
             sx={{
               backgroundColor: theme.palette.background.default,
               p: "0 1.5rem 1.5rem 0",
@@ -315,8 +344,10 @@ const PostDetailsDialog = ({ post, setPost, open, setOpen, project, setProject }
           >
             <Button
               onClick={() => {
-                // setEmail("");
-                // setOpen(false);
+                setOpen(false);
+              }}
+              sx={{
+                color: theme.palette.grey[200],
               }}
             >
               Cancel
@@ -328,9 +359,9 @@ const PostDetailsDialog = ({ post, setPost, open, setOpen, project, setProject }
               }}
               autoFocus
             >
-              Save
+              Next Step
             </Button>
-          </DialogActions> */}
+          </DialogActions>
         </Dialog>
       )}
     </Box>
