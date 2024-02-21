@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Box, Button, Dialog, DialogContent, useTheme, Slide, Divider, Typography, Menu, MenuItem, FormControl, Select } from "@mui/material";
+import { Box, Button, Dialog, DialogContent, useTheme, Slide, Divider, Typography, Menu, MenuItem, FormControl, Select, Autocomplete, TextField } from "@mui/material";
 import { ArrowDropDownOutlined } from "@mui/icons-material";
 
 import TextOrInput from "../TextOrInput";
@@ -13,12 +13,27 @@ const Transition = React.forwardRef(function Transition(props, ref) {
 
 const PostDetailsDialog = ({ post, setPost, open, setOpen, project, setProject }) => {
   const theme = useTheme();
-  const { isLoading, error, sendRequest } = useHttp();
+  const { isLoading, sendRequest } = useHttp();
+  const { isLoading: getWebsitesIsLoading, error: getWebsitesError, sendRequest: getWebsitesSendRequest } = useHttp();
+  const { isLoading: getClientWebsitesSendIsLoading, error: getClientWebsitesSendError, sendRequest: getClientWebsitesSendRequest } = useHttp();
   const [users, setUsers] = useState([]);
   const [userMenuAnchorEl, setUserMenuAnchorEl] = useState(null);
   const [selectedUserRole, setSelectedUserRole] = useState(null);
+  const [websiteList, setWebsiteList] = useState(null);
+  const [clientWebsite, setClientWebsite] = useState(null);
+  const [clientWebsiteList, setClientWebsiteList] = useState(null);
 
   const userMenuIsOpen = Boolean(userMenuAnchorEl);
+
+  const websiteAutocompleteProps = {
+    options: websiteList,
+    getOptionLabel: (option) => option.url,
+  };
+
+  const clientWebsiteAutocompleteProps = {
+    options: clientWebsiteList,
+    getOptionLabel: (option) => option.url,
+  };
 
   useEffect(() => {
     sendRequest(
@@ -34,7 +49,33 @@ const PostDetailsDialog = ({ post, setPost, open, setOpen, project, setProject }
         console.log("users:", userData);
       }
     );
-  }, [sendRequest]);
+    getWebsitesSendRequest(
+      {
+        url: "/websites",
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      },
+      (websiteData) => {
+        console.log("websites:", websiteData);
+        setWebsiteList(websiteData);
+      }
+    );
+    getClientWebsitesSendRequest(
+      {
+        url: "/clientWebsites",
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      },
+      (clientWebsitesData) => {
+        console.log("clientWebsites", clientWebsitesData);
+        setClientWebsiteList(clientWebsitesData);
+      }
+    );
+  }, [sendRequest, getWebsitesSendRequest, getClientWebsitesSendRequest]);
 
   const getDate = (dateStr) => {
     const date = new Date(dateStr);
@@ -95,10 +136,12 @@ const PostDetailsDialog = ({ post, setPost, open, setOpen, project, setProject }
 
   const setUserMenuItemHandler = async (user) => {
     if (isLoading) return;
+    let requestOkStatus = true;
     const body = {};
     body[selectedUserRole] = user._id;
     // Update assigned editor/copywriter in post
-    if (!isLoading && !error) {
+    if (!isLoading) {
+      requestOkStatus = false;
       await sendRequest(
         {
           url: `/postRequests/${post._id}`,
@@ -110,13 +153,14 @@ const PostDetailsDialog = ({ post, setPost, open, setOpen, project, setProject }
         },
         (postData) => {
           console.log("post:", postData);
+          requestOkStatus = true;
           setPost(postData);
           setUserMenuAnchorEl(null);
         }
       );
     }
     // Update assigned user in task
-    if (!isLoading && !error) {
+    if (!isLoading && requestOkStatus) {
       let taskId = null;
       let assignedUserId = user._id;
       for (const t of post.tasks) {
@@ -129,6 +173,7 @@ const PostDetailsDialog = ({ post, setPost, open, setOpen, project, setProject }
         }
       }
       if (taskId && assignedUserId) {
+        requestOkStatus = false;
         await sendRequest(
           {
             url: `/postTasks/${taskId}`,
@@ -142,12 +187,14 @@ const PostDetailsDialog = ({ post, setPost, open, setOpen, project, setProject }
           },
           (taskData) => {
             console.log("task:", taskData);
+            requestOkStatus = true;
           }
         );
       }
     }
     // Refresh project details
-    if (!isLoading && !error) {
+    if (!isLoading && requestOkStatus) {
+      requestOkStatus = false;
       await sendRequest(
         {
           url: `/projects/${project._id}`,
@@ -158,6 +205,7 @@ const PostDetailsDialog = ({ post, setPost, open, setOpen, project, setProject }
         },
         (projectData) => {
           console.log("project:", projectData);
+          requestOkStatus = true;
           setProject(projectData);
           for (const p of projectData.postRequests) {
             if (p._id === post._id) {
@@ -239,7 +287,40 @@ const PostDetailsDialog = ({ post, setPost, open, setOpen, project, setProject }
             <Box display="flex" flexDirection="column" p="2rem" backgroundColor={theme.palette.background.light} borderRadius="5px" width="100%">
               <Box display="flex" gap="1rem" alignItems="center">
                 <Typography color={theme.palette.grey[500]}>Website:</Typography>
-                <TextOrInput fontSize="14px" textValue={post.website.url} callback={updatePostHandler} fieldToUpdate="url" tableToUpdate="websites" />
+                {/* <TextOrInput fontSize="14px" textValue={post.website.url} callback={updatePostHandler} fieldToUpdate="url" tableToUpdate="websites" /> */}
+                {!getWebsitesIsLoading && !getWebsitesError && websiteList && (
+                  <Autocomplete
+                    {...websiteAutocompleteProps}
+                    value={post.website}
+                    onChange={async (event, newValue) => {
+                      // console.log(newValue);
+                      // TODO: autocomplete value is invalid, vidi kako da se namesti
+                      const isLoading = await updatePostHandler(newValue._id, "website", "postRequests");
+                      if (!isLoading)
+                        setPost((prevVal) => {
+                          const newVal = { ...prevVal };
+                          newVal.website = { ...newValue };
+                          return newVal;
+                        });
+                    }}
+                    renderInput={(params) => <TextField {...params} variant="standard" />}
+                    sx={{
+                      "& .MuiAutocomplete-input": {
+                        width: "100% !important",
+                      },
+                      "& .MuiInputBase-root": {
+                        color: `${theme.palette.grey[500]} !important`,
+                      },
+                      "& .MuiInputBase-root::before": {
+                        borderBottom: `1px solid ${theme.palette.grey[200]}`,
+                      },
+                      color: theme.palette.grey[500],
+                      "& .MuiSvgIcon-root": {
+                        color: theme.palette.grey[200],
+                      },
+                    }}
+                  />
+                )}
               </Box>
               <Divider sx={{ borderColor: theme.palette.grey[700], mt: "1rem", mb: "1rem" }} />
               <Box display="flex" gap="1rem" alignItems="center">
