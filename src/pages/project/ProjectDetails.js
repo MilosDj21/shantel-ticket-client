@@ -1,10 +1,8 @@
 import { Fragment, useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useParams } from "react-router-dom";
 import { DataGrid } from "@mui/x-data-grid";
-import { Button, Box, useTheme, useMediaQuery, IconButton, Tooltip, Typography } from "@mui/material";
+import { Button, Box, useTheme, IconButton, Tooltip, Typography } from "@mui/material";
 import { Add } from "@mui/icons-material";
-import parse from "html-react-parser";
 
 import useHttp from "../../hooks/use-http";
 import TextOrInput from "../../components/TextOrInput";
@@ -16,12 +14,8 @@ const serverAddress = process.env.ENVIRONMENT === "production" ? process.env.REA
 
 const ProjectDetails = () => {
   const theme = useTheme();
-  const navigate = useNavigate();
-  const isNonMobile = useMediaQuery("(min-width: 600px)");
-  const userId = useSelector((state) => state.userId);
   const { projectId } = useParams();
   const { isLoading, error, sendRequest } = useHttp();
-  const { sendRequest: saveTitleSendRequest } = useHttp();
   const [data, setData] = useState("");
   const [selectedPost, setSelectedPost] = useState(null);
   const [openNewPostDialog, setOpenNewPostDialog] = useState(false);
@@ -44,15 +38,13 @@ const ProjectDetails = () => {
     );
   }, [sendRequest, projectId]);
 
-  const confirmSelectedPostDialogHandle = () => {};
-
   const rowClickHandle = async (params) => {
     console.log(params.row);
     setSelectedPost(params.row);
     setOpenSelectedPostDialog(true);
   };
 
-  const buttonClickHandle = async (params) => {
+  const tableButtonClickHandle = async (params) => {
     let nextStep = "";
     let groupTitle = "";
     let groupId = null;
@@ -89,14 +81,6 @@ const ProjectDetails = () => {
         (groupData) => {
           console.log("group:", groupData);
           groupId = groupData._id;
-          // // when new group is created tasks are undefined, so i add them manually
-          // groupData.tasks = [];
-          // // set new group data for project
-          // setData((prevVal) => {
-          //   const newData = { ...prevVal };
-          //   newData.groups = [groupData, ...prevVal.groups];
-          //   return newData;
-          // });
         }
       );
     }
@@ -120,19 +104,6 @@ const ProjectDetails = () => {
         (taskData) => {
           console.log("task:", taskData);
           taskId = taskData._id;
-          // // when new task is created messages are undefined, so i add them manually
-          // taskData.messages = [];
-          // // set new task data for project
-          // setData((prevVal) => {
-          //   const newData = { ...prevVal };
-          //   for (const group of newData.groups) {
-          //     if (group._id === groupId) {
-          //       group.tasks = [taskData, ...group.tasks];
-          //       break;
-          //     }
-          //   }
-          //   return newData;
-          // });
         }
       );
     }
@@ -152,11 +123,6 @@ const ProjectDetails = () => {
         },
         (postData) => {
           console.log("post", postData);
-          // for (const post of data.postRequests) {
-          //   if (post._id === params._id) {
-          //     post.progressLevel = nextStep;
-          //   }
-          // }
         }
       );
     }
@@ -364,7 +330,7 @@ const ProjectDetails = () => {
             disabled={isLoading}
             onClick={(e) => {
               e.stopPropagation();
-              buttonClickHandle(params.row);
+              tableButtonClickHandle(params.row);
             }}
           >
             {buttonText}
