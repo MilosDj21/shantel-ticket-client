@@ -156,7 +156,7 @@ const NewPostDialog = ({ title, open, setOpen, project, setProject = null }) => 
         }
       }
       // If group is not already in project create new group
-      if (!groupId && !isLoading && !error) {
+      if (!groupId && !isLoading) {
         await sendRequest(
           {
             url: `/postTaskGroups`,
@@ -185,7 +185,7 @@ const NewPostDialog = ({ title, open, setOpen, project, setProject = null }) => 
         );
       }
       // Create new task for post checking
-      if (!isLoading && !error && groupId) {
+      if (!isLoading && groupId) {
         await sendRequest(
           {
             url: `/postTasks`,
