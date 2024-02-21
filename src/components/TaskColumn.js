@@ -7,7 +7,8 @@ const TaskColumn = ({ column }) => {
   return (
     <Box
       sx={{
-        maxWidth: "20%",
+        // maxWidth: "20%",
+        width: "20%",
         // mt: "2rem",
         p: "0.4rem 0.7rem",
         borderRadius: "9px",
