@@ -30,7 +30,7 @@ const Transition = React.forwardRef(function Transition(props, ref) {
 
 const NewPostDialog = ({ title, open, setOpen, project, setProject = null }) => {
   const theme = useTheme();
-  const { isLoading, error, sendRequest } = useHttp();
+  const { isLoading, sendRequest } = useHttp();
   const { isLoading: getWebsitesIsLoading, error: getWebsitesError, sendRequest: getWebsitesSendRequest } = useHttp();
   const { isLoading: getClientWebsitesSendIsLoading, error: getClientWebsitesSendError, sendRequest: getClientWebsitesSendRequest } = useHttp();
   const [postTitle, setPostTitle] = useState("");

@@ -74,7 +74,7 @@ const NewProject = () => {
           </Button>
         </Box>
       </Box>
-      <NewPostDialog title="Add New Post" open={openNewPostDialog} setOpen={setOpenNewPostDialog} project={project} />
+      <NewPostDialog title="Add New Post" open={openNewPostDialog} setOpen={setOpenNewPostDialog} project={project} setProject={setProject} />
     </Fragment>
   );
 };
