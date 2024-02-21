@@ -87,6 +87,12 @@ const ProjectDetails = () => {
 
     // Create new task for next step
     if (groupId && !isLoading && !error) {
+      let assignedUserId = null;
+      if (groupTitle === "Article Writing" && params.copywriter) {
+        assignedUserId = params.copywriter._id;
+      } else if (groupTitle === "Post Publishing" && params.editor) {
+        assignedUserId = params.editor._id;
+      }
       await sendRequest(
         {
           url: `/postTasks`,
@@ -97,6 +103,7 @@ const ProjectDetails = () => {
           body: {
             title: params.title,
             dueTime: params.urgencyLevel,
+            assignedUser: assignedUserId,
             post: params._id,
             group: groupId,
           },
