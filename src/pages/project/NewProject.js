@@ -28,6 +28,7 @@ const NewProject = () => {
         },
       },
       (projectData) => {
+        console.log("project:", projectData);
         setProject(projectData);
         setOpenNewPostDialog(true);
       }
@@ -67,7 +68,8 @@ const NewProject = () => {
             sx={{
               p: "0.4rem 3.5rem",
               fontSize: "16px",
-            }}>
+            }}
+          >
             Save
           </Button>
         </Box>

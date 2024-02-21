@@ -9,7 +9,7 @@ const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
 });
 
-const NewClientLinkDialog = ({ title, open, setOpen, setLink, setLinkList }) => {
+const NewClientWebsiteDialog = ({ title, open, setOpen, setClientWebsite, setClientWebsiteList }) => {
   const theme = useTheme();
   const { isLoading, error, sendRequest } = useHttp();
   const [url, setUrl] = useState("");
@@ -23,24 +23,22 @@ const NewClientLinkDialog = ({ title, open, setOpen, setLink, setLinkList }) => 
   };
 
   useEffect(() => {
-    if (!isLoading) {
-      sendRequest(
-        {
-          url: "/clients",
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
+    sendRequest(
+      {
+        url: "/clients",
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
         },
-        (clientData) => {
-          console.log("clients:", clientData);
-          setClientList(clientData);
-        }
-      );
-    }
+      },
+      (clientData) => {
+        console.log("clients:", clientData);
+        setClientList(clientData);
+      }
+    );
   }, [sendRequest]);
 
-  const createNewLinkHandler = async (url, client) => {
+  const createNewClientWebsiteHandler = async (url, client) => {
     const trimmed = url.trim();
     if (trimmed.length === 0 || !client) return;
     const lastChar = trimmed.substring(trimmed.length - 1);
@@ -48,7 +46,7 @@ const NewClientLinkDialog = ({ title, open, setOpen, setLink, setLinkList }) => 
     if (!isLoading) {
       sendRequest(
         {
-          url: "/clientLinks",
+          url: "/clientWebsites",
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -58,12 +56,12 @@ const NewClientLinkDialog = ({ title, open, setOpen, setLink, setLinkList }) => 
             client: client._id,
           },
         },
-        (linkData) => {
-          console.log("link:", linkData);
-          setLinkList((prevVal) => {
-            return [linkData, ...prevVal];
+        (websiteData) => {
+          console.log("website:", websiteData);
+          setClientWebsiteList((prevVal) => {
+            return [websiteData, ...prevVal];
           });
-          setLink(linkData);
+          setClientWebsite(websiteData);
           setOpen(false);
         }
       );
@@ -86,7 +84,8 @@ const NewClientLinkDialog = ({ title, open, setOpen, setLink, setLinkList }) => 
           sx: {
             borderRadius: "9px",
           },
-        }}>
+        }}
+      >
         <DialogTitle
           sx={{
             color: theme.palette.grey[200],
@@ -95,13 +94,15 @@ const NewClientLinkDialog = ({ title, open, setOpen, setLink, setLinkList }) => 
             textAlign: "center",
             p: "1.5rem",
           }}
-          id="alert-dialog-title">
+          id="alert-dialog-title"
+        >
           {title}
         </DialogTitle>
         <DialogContent
           sx={{
             backgroundColor: theme.palette.background.default,
-          }}>
+          }}
+        >
           <Box display="flex" flexDirection="column" alignItems="center" gap="1.5rem" p="3rem 3rem 3rem 3rem" backgroundColor="rgba(17, 18, 20, 0.3)" borderRadius="9px" width="100%">
             {/* Url */}
             <Box backgroundColor={theme.palette.background.light} display="flex" alignItems="center" borderRadius="9px" gap="1rem" p="0.1rem 1.5rem" width="100%">
@@ -141,7 +142,8 @@ const NewClientLinkDialog = ({ title, open, setOpen, setLink, setLinkList }) => 
                     color: theme.palette.grey[700],
                     p: "0.2rem 0",
                     fontSize: "18px",
-                  }}>
+                  }}
+                >
                   Client
                 </Typography>
                 {!isLoading && !error && clientList && (
@@ -175,7 +177,8 @@ const NewClientLinkDialog = ({ title, open, setOpen, setLink, setLinkList }) => 
                   <IconButton
                     onClick={() => {
                       setOpenClientDialog(true);
-                    }}>
+                    }}
+                  >
                     <Add
                       sx={{
                         color: theme.palette.grey.main,
@@ -198,7 +201,8 @@ const NewClientLinkDialog = ({ title, open, setOpen, setLink, setLinkList }) => 
           sx={{
             backgroundColor: theme.palette.background.default,
             p: "0 1.5rem 1.5rem 0",
-          }}>
+          }}
+        >
           <Button
             onClick={() => {
               setUrl("");
@@ -207,16 +211,18 @@ const NewClientLinkDialog = ({ title, open, setOpen, setLink, setLinkList }) => 
             }}
             sx={{
               color: "white",
-            }}>
+            }}
+          >
             Cancel
           </Button>
           <Button
             onClick={() => {
-              createNewLinkHandler(url, client);
+              createNewClientWebsiteHandler(url, client);
               setUrl("");
               setClient(null);
             }}
-            autoFocus>
+            autoFocus
+          >
             Save
           </Button>
         </DialogActions>
@@ -226,4 +232,4 @@ const NewClientLinkDialog = ({ title, open, setOpen, setLink, setLinkList }) => 
   );
 };
 
-export default NewClientLinkDialog;
+export default NewClientWebsiteDialog;

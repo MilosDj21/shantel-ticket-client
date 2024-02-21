@@ -234,40 +234,40 @@ const ProjectDetails = () => {
       flex: 0.5,
     },
     {
-      field: "clientPaidLink",
-      headerName: "Client Link",
+      field: "clientWebsite",
+      headerName: "Client Website",
       flex: 1,
       renderCell: (params) => {
         return params.value.url;
       },
     },
     {
-      field: "linkCategory",
-      headerName: "Link Status",
+      field: "clientWebsiteCategory",
+      headerName: "ClientWebsite Status",
       flex: 0.4,
       valueGetter: (params) => {
-        return params.row.clientPaidLink.status;
+        return params.row.clientWebsite.status;
       },
       renderCell: (params) => {
-        let linkStatusColor = theme.palette.grey.main;
+        let clientWebsiteStatusColor = theme.palette.grey.main;
         switch (params.value) {
           case "Odobren":
-            linkStatusColor = theme.palette.primary.main;
+            clientWebsiteStatusColor = theme.palette.primary.main;
             break;
           case "Semafor":
-            linkStatusColor = "#eddd50";
+            clientWebsiteStatusColor = "#eddd50";
             break;
           case "Pijaca":
-            linkStatusColor = "#b14fea";
+            clientWebsiteStatusColor = "#b14fea";
             break;
           case "Odbijen":
-            linkStatusColor = "#e84e4e";
+            clientWebsiteStatusColor = "#e84e4e";
             break;
           default:
-            linkStatusColor = theme.palette.grey.main;
+            clientWebsiteStatusColor = theme.palette.grey.main;
         }
         return (
-          <Typography color={linkStatusColor} fontSize="0.75rem">
+          <Typography color={clientWebsiteStatusColor} fontSize="0.75rem">
             {params.value}
           </Typography>
         );

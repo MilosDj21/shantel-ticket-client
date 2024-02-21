@@ -48,7 +48,7 @@ const PostDetailsDialog = ({ post, setPost, open, setOpen, project, setProject }
   };
 
   const updatePostHandler = async (text, fieldToUpdate, tableToUpdate) => {
-    const id = tableToUpdate === "postRequests" ? post._id : tableToUpdate === "websites" ? post.website._id : post.clientPaidLink._id;
+    const id = tableToUpdate === "postRequests" ? post._id : tableToUpdate === "websites" ? post.website._id : post.clientWebsite._id;
     const body = {};
     body[fieldToUpdate] = text;
     // If previous request is not done set input text to previous value
@@ -250,13 +250,13 @@ const PostDetailsDialog = ({ post, setPost, open, setOpen, project, setProject }
               <Divider sx={{ borderColor: theme.palette.grey[700], mt: "1rem", mb: "1rem" }} />
               <Box display="flex" gap="3rem">
                 <Box display="flex" gap="1rem" alignItems="center">
-                  <Typography color={theme.palette.grey[500]}>Client Link:</Typography>
-                  {/* <Typography color={theme.palette.grey[200]}>{post.clientPaidLink.url}</Typography> */}
-                  <TextOrInput fontSize="14px" textValue={post.clientPaidLink.url} callback={updatePostHandler} fieldToUpdate="url" tableToUpdate="clientLinks" />
+                  <Typography color={theme.palette.grey[500]}>Client Website:</Typography>
+                  <Typography color={theme.palette.grey[200]}>{post.clientWebsite.url}</Typography>
+                  {/* <TextOrInput fontSize="14px" textValue={post.clientWebsite.url} callback={updatePostHandler} fieldToUpdate="url" tableToUpdate="clientWebsites" /> */}
                 </Box>
                 <Box display="flex" gap="1rem" alignItems="center">
-                  <Typography color={theme.palette.grey[500]}>Link Status:</Typography>
-                  <Typography color={theme.palette.grey[200]}>{post.clientPaidLink.status}</Typography>
+                  <Typography color={theme.palette.grey[500]}>Client Website Status:</Typography>
+                  <Typography color={theme.palette.grey[200]}>{post.clientWebsite.status}</Typography>
                 </Box>
               </Box>
               <Divider sx={{ borderColor: theme.palette.grey[700], mt: "1rem", mb: "1rem" }} />
