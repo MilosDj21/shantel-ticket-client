@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Box, Button, Dialog, DialogActions, DialogContent, useTheme, Slide, Divider, Typography, Menu, MenuItem, FormControl, Select } from "@mui/material";
+import { Box, Button, Dialog, DialogContent, useTheme, Slide, Divider, Typography, Menu, MenuItem, FormControl, Select } from "@mui/material";
 import { ArrowDropDownOutlined } from "@mui/icons-material";
 
 import TextOrInput from "../TextOrInput";
@@ -97,6 +97,7 @@ const PostDetailsDialog = ({ post, setPost, open, setOpen, project, setProject }
     if (isLoading) return;
     const body = {};
     body[selectedUserRole] = user._id;
+    // Update assigned editor/copywriter in post
     if (!isLoading && !error) {
       await sendRequest(
         {
@@ -111,35 +112,19 @@ const PostDetailsDialog = ({ post, setPost, open, setOpen, project, setProject }
           console.log("post:", postData);
           setPost(postData);
           setUserMenuAnchorEl(null);
-          // setProject((prevVal) => {
-          //   const tempList = [];
-          //   const newData = { ...prevVal };
-          //   for (const p of prevVal.postRequests) {
-          //     if (p._id !== postData._id) {
-          //       tempList.push(p);
-          //     }
-          //   }
-          //   newData.postRequests = [postData, ...tempList];
-          //   return newData;
-          // });
         }
       );
     }
     // Update assigned user in task
     if (!isLoading && !error) {
       let taskId = null;
-      let assignedUserId = null;
+      let assignedUserId = user._id;
       for (const t of post.tasks) {
-        // TODO: ne radi trenutno, uvek isti task menja, proveriti
-        if (t.group.title === "Article Writing") {
+        if (t.group.title === "Article Writing" && selectedUserRole === "copywriter") {
           taskId = t._id;
-          if (post.copywriter) assignedUserId = post.copywriter._id;
-          console.log("writer", post.copywriter._id);
           break;
-        } else if (t.group.title === "Post Publishing") {
+        } else if (t.group.title === "Post Publishing" && selectedUserRole === "editor") {
           taskId = t._id;
-          if (post.editor) assignedUserId = post.editor._id;
-          console.log("editor", post.editor._id);
           break;
         }
       }
@@ -157,21 +142,6 @@ const PostDetailsDialog = ({ post, setPost, open, setOpen, project, setProject }
           },
           (taskData) => {
             console.log("task:", taskData);
-            // setProject((prevVal) => {
-            //   let tempList = [];
-            //   const newData = { ...prevVal };
-            //   for (const p of prevVal.postRequests) {
-            //     tempList = [];
-            //     for(const t of p.tasks){
-            //       if (t._id !== taskData._id) {
-            //         tempList.push(t);
-            //       }
-            //     }
-
-            //   }
-            //   newData.postRequests = [taskData, ...tempList];
-            //   return newData;
-            // });
           }
         );
       }
@@ -387,17 +357,34 @@ const PostDetailsDialog = ({ post, setPost, open, setOpen, project, setProject }
                 </Box>
                 <Menu anchorEl={userMenuAnchorEl} open={userMenuIsOpen} onClose={() => setUserMenuAnchorEl(null)} anchorOrigin={{ vertical: "bottom", horizontal: "center" }}>
                   {users.map((u) => {
-                    return (
-                      <MenuItem
-                        key={u._id}
-                        onClick={() => {
-                          setUserMenuItemHandler(u);
-                        }}
-                      >
-                        <Typography mr="0.4rem">{u.firstName}</Typography>
-                        <Typography>{u.lastName}</Typography>
-                      </MenuItem>
-                    );
+                    for (const r of u.roles) {
+                      if (r.name === "Editor" && selectedUserRole === "editor") {
+                        return (
+                          <MenuItem
+                            key={u._id}
+                            onClick={() => {
+                              setUserMenuItemHandler(u);
+                            }}
+                          >
+                            <Typography mr="0.4rem">{u.firstName}</Typography>
+                            <Typography>{u.lastName}</Typography>
+                          </MenuItem>
+                        );
+                      } else if (r.name === "Copywriter" && selectedUserRole === "copywriter") {
+                        return (
+                          <MenuItem
+                            key={u._id}
+                            onClick={() => {
+                              setUserMenuItemHandler(u);
+                            }}
+                          >
+                            <Typography mr="0.4rem">{u.firstName}</Typography>
+                            <Typography>{u.lastName}</Typography>
+                          </MenuItem>
+                        );
+                      }
+                    }
+                    return "";
                   })}
                 </Menu>
               </Box>
