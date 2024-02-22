@@ -1,14 +1,14 @@
 import { useState } from "react";
 import { InputBase, useTheme } from "@mui/material";
 
-const TextOrInput = ({ fontSize, textValue, callback, fieldToUpdate = null, tableToUpdate = null }) => {
+const TextOrInput = ({ fontSize, textValue, callback, fieldToUpdate = null }) => {
   const theme = useTheme();
   const [text, setText] = useState(textValue ? textValue : "");
   const [tempVal, setTempVal] = useState(textValue ? textValue.toString().slice() : "");
 
   const onBlurHandler = async () => {
-    if (fieldToUpdate && tableToUpdate) {
-      const isLoading = await callback(text, fieldToUpdate, tableToUpdate);
+    if (fieldToUpdate) {
+      const isLoading = await callback(text, fieldToUpdate);
       if (isLoading) setText(tempVal.toString().slice(0));
     } else {
       callback(text);
