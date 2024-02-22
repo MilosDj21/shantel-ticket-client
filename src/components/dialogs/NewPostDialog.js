@@ -23,6 +23,7 @@ import { Title, Language, Anchor, Link, AccessTime, Numbers, Article, Add } from
 import useHttp from "../../hooks/use-http";
 import NewWebsiteDialog from "./NewWebsiteDialog";
 import NewClientWebsiteDialog from "./NewClientWebsiteDialog";
+import NewClientLinkDialog from "./NewClientLinkDialog";
 
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
@@ -33,18 +34,22 @@ const NewPostDialog = ({ title, open, setOpen, project, setProject = null }) => 
   const { isLoading, sendRequest } = useHttp();
   const { isLoading: getWebsitesIsLoading, error: getWebsitesError, sendRequest: getWebsitesSendRequest } = useHttp();
   const { isLoading: getClientWebsitesSendIsLoading, error: getClientWebsitesSendError, sendRequest: getClientWebsitesSendRequest } = useHttp();
+  const { isLoading: getClientLinksSendIsLoading, error: getClientLinksSendError, sendRequest: getClientLinksSendRequest } = useHttp();
   const [postTitle, setPostTitle] = useState("");
   const [website, setWebsite] = useState(null);
   const [websiteList, setWebsiteList] = useState(null);
   const [anchor, setAnchor] = useState("");
   const [clientWebsite, setClientWebsite] = useState(null);
   const [clientWebsiteList, setClientWebsiteList] = useState(null);
+  const [clientLink, setClientLink] = useState(null);
+  const [clientLinkList, setClientLinkList] = useState(null);
   const [urgency, setUrgency] = useState("");
   const [postCategory, setPostCategory] = useState("Placeni");
   const [wordNum, setWordNum] = useState("");
   const [clientHasText, setClientHasText] = useState(false);
   const [openWebsiteDialog, setOpenWebsiteDialog] = useState(false);
   const [openClientWebsiteDialog, setOpenClientWebsiteDialog] = useState(false);
+  const [openClientLinkDialog, setOpenClientLinkDialog] = useState(false);
 
   let clientWebsiteStatusColor = theme.palette.grey.main;
   if (clientWebsite) {
@@ -76,6 +81,11 @@ const NewPostDialog = ({ title, open, setOpen, project, setProject = null }) => 
     getOptionLabel: (option) => option.url,
   };
 
+  const clientLinkAutocompleteProps = {
+    options: clientLinkList,
+    getOptionLabel: (option) => option.url,
+  };
+
   useEffect(() => {
     getWebsitesSendRequest(
       {
@@ -103,7 +113,32 @@ const NewPostDialog = ({ title, open, setOpen, project, setProject = null }) => 
         setClientWebsiteList(clientWebsitesData);
       }
     );
-  }, [getWebsitesSendRequest, getClientWebsitesSendRequest]);
+    getClientLinksSendRequest(
+      {
+        url: "/clientLinks",
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      },
+      (clientLinkData) => {
+        console.log("clientLinks", clientLinkData);
+        setClientLinkList(clientLinkData);
+      }
+    );
+  }, [getWebsitesSendRequest, getClientWebsitesSendRequest, getClientLinksSendRequest]);
+
+  // TODO: vidi dal ovako radi
+  useEffect(() => {
+    if (clientWebsite) {
+      setClientLink(null);
+      setClientLinkList((prevVal) => {
+        return prevVal.filter((l) => {
+          return l.url.includes(clientWebsite);
+        });
+      });
+    }
+  }, [clientWebsite]);
 
   const createPostHandler = async () => {
     let post = null;
@@ -111,7 +146,7 @@ const NewPostDialog = ({ title, open, setOpen, project, setProject = null }) => 
     if (clientWebsite.status === "Odobren" || clientWebsite.status === "Semafor" || clientWebsite.status === "Pijaca") {
       progressLevel = "doneCheck";
     }
-    if (!postTitle || !website || !postCategory || !anchor || !clientWebsite || !urgency || !wordNum || clientWebsite.status === "Odbijen") return;
+    if (!postTitle || !website || !postCategory || !anchor || !clientWebsite || !clientLink || !urgency || !wordNum || clientWebsite.status === "Odbijen") return;
     // Save new post
     await sendRequest(
       {
@@ -500,6 +535,74 @@ const NewPostDialog = ({ title, open, setOpen, project, setProject = null }) => 
               </Box>
             </Box>
 
+            {/* Client Link */}
+            <Box backgroundColor={theme.palette.background.light} display="flex" alignItems="center" justifyContent="space-between" borderRadius="9px" p="0.1rem 1.5rem" width="100%">
+              <Box display="flex" alignItems="center" borderRadius="9px" gap="1rem" width="60%">
+                <Link
+                  sx={{
+                    color: theme.palette.grey[700],
+                    fontSize: "30px",
+                  }}
+                />
+                <Typography
+                  sx={{
+                    color: theme.palette.grey[700],
+                    p: "0.2rem 0",
+                    fontSize: "18px",
+                  }}
+                >
+                  Client Link
+                </Typography>
+                {!getClientLinksSendIsLoading && !getClientLinksSendError && clientLinkList && (
+                  <Autocomplete
+                    {...clientLinkAutocompleteProps}
+                    value={clientLink}
+                    onChange={(event, newValue) => {
+                      setClientLink(newValue);
+                    }}
+                    renderInput={(params) => <TextField {...params} variant="standard" />}
+                    sx={{
+                      "& .MuiAutocomplete-input": {
+                        width: "100% !important",
+                      },
+                      "& .MuiInputBase-root": {
+                        color: `${theme.palette.grey[500]} !important`,
+                      },
+                      "& .MuiInputBase-root::before": {
+                        borderBottom: `1px solid ${theme.palette.grey[200]}`,
+                      },
+                      color: theme.palette.grey[500],
+                      "& .MuiSvgIcon-root": {
+                        color: theme.palette.grey[200],
+                      },
+                    }}
+                  />
+                )}
+              </Box>
+              <Box>
+                <Tooltip title="Add new client link" placement="top" arrow>
+                  <IconButton
+                    onClick={() => {
+                      setOpenClientLinkDialog(true);
+                    }}
+                  >
+                    <Add
+                      sx={{
+                        color: theme.palette.grey.main,
+                        fontSize: "30px",
+                        border: `1px solid ${theme.palette.grey.main}`,
+                        borderRadius: "5px",
+                        ":hover": {
+                          color: theme.palette.grey[900],
+                          backgroundColor: theme.palette.grey.main,
+                        },
+                      }}
+                    />
+                  </IconButton>
+                </Tooltip>
+              </Box>
+            </Box>
+
             {/* Urgency Level */}
             <Box backgroundColor={theme.palette.background.light} display="flex" alignItems="center" borderRadius="9px" gap="1rem" p="0.1rem 1.5rem" width="100%">
               <AccessTime
@@ -619,14 +722,26 @@ const NewPostDialog = ({ title, open, setOpen, project, setProject = null }) => 
           </Button>
         </DialogActions>
       </Dialog>
-      <NewWebsiteDialog title="Add New Website" open={openWebsiteDialog} setOpen={setOpenWebsiteDialog} setWebsite={setWebsite} setWebsiteList={setWebsiteList} />
-      <NewClientWebsiteDialog
-        title="Add New Client Website"
-        open={openClientWebsiteDialog}
-        setOpen={setOpenClientWebsiteDialog}
-        setClientWebsite={setClientWebsite}
-        setClientWebsiteList={setClientWebsiteList}
-      />
+      {openWebsiteDialog && <NewWebsiteDialog title="Add New Website" open={openWebsiteDialog} setOpen={setOpenWebsiteDialog} setWebsite={setWebsite} setWebsiteList={setWebsiteList} />}
+      {openClientWebsiteDialog && (
+        <NewClientWebsiteDialog
+          title="Add New Client Website"
+          open={openClientWebsiteDialog}
+          setOpen={setOpenClientWebsiteDialog}
+          setClientWebsite={setClientWebsite}
+          setClientWebsiteList={setClientWebsiteList}
+        />
+      )}
+      {openClientLinkDialog && clientWebsite && (
+        <NewClientLinkDialog
+          title="Add New Client Link"
+          open={openClientLinkDialog}
+          setOpen={setOpenClientLinkDialog}
+          setClientLink={setClientLink}
+          setClientLinkList={setClientLinkList}
+          clientWebsite={clientWebsite}
+        />
+      )}
     </Box>
   );
 };
