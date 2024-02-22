@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { Box, Button, Dialog, DialogContent, useTheme, Slide, Divider, Typography, Menu, MenuItem, FormControl, Select, Autocomplete, TextField } from "@mui/material";
-import { ArrowDropDownOutlined } from "@mui/icons-material";
+import { Box, Button, Dialog, DialogContent, useTheme, Slide, Divider, Typography, Menu, MenuItem, FormControl, Select, Autocomplete, TextField, Tooltip, IconButton } from "@mui/material";
+import { ArrowDropDownOutlined, Add } from "@mui/icons-material";
 
 import TextOrInput from "../TextOrInput";
 import useHttp from "../../hooks/use-http";
+import NewWebsiteDialog from "./NewWebsiteDialog";
+import NewClientWebsiteDialog from "./NewClientWebsiteDialog";
 
 const serverAddress = process.env.ENVIRONMENT === "production" ? process.env.REACT_APP_PROD_BASE_URL : process.env.REACT_APP_DEV_BASE_URL;
 
@@ -19,9 +21,12 @@ const PostDetailsDialog = ({ post, setPost, open, setOpen, project, setProject }
   const [users, setUsers] = useState([]);
   const [userMenuAnchorEl, setUserMenuAnchorEl] = useState(null);
   const [selectedUserRole, setSelectedUserRole] = useState(null);
+  const [website, setWebsite] = useState(null);
   const [websiteList, setWebsiteList] = useState(null);
   const [clientWebsite, setClientWebsite] = useState(null);
   const [clientWebsiteList, setClientWebsiteList] = useState(null);
+  const [openWebsiteDialog, setOpenWebsiteDialog] = useState(false);
+  const [openClientWebsiteDialog, setOpenClientWebsiteDialog] = useState(false);
 
   const userMenuIsOpen = Boolean(userMenuAnchorEl);
 
@@ -34,6 +39,28 @@ const PostDetailsDialog = ({ post, setPost, open, setOpen, project, setProject }
     options: clientWebsiteList,
     getOptionLabel: (option) => option.url,
   };
+
+  useEffect(() => {
+    if (post && !website && websiteList) {
+      for (const w of websiteList) {
+        if (post.website._id === w._id) {
+          setWebsite(w);
+        }
+      }
+    }
+    if (!open) setWebsite(null);
+  }, [post, website, websiteList, open]);
+
+  useEffect(() => {
+    if (post && !clientWebsite && clientWebsiteList) {
+      for (const w of clientWebsiteList) {
+        if (post.clientWebsite._id === w._id) {
+          setClientWebsite(w);
+        }
+      }
+    }
+    if (!open) setClientWebsite(null);
+  }, [post, clientWebsite, clientWebsiteList, open]);
 
   useEffect(() => {
     sendRequest(
@@ -88,15 +115,24 @@ const PostDetailsDialog = ({ post, setPost, open, setOpen, project, setProject }
     return `${day}-${month}-${year} ${hour}:${minutes}:${seconds}`;
   };
 
-  const updatePostHandler = async (text, fieldToUpdate, tableToUpdate) => {
-    const id = tableToUpdate === "postRequests" ? post._id : tableToUpdate === "websites" ? post.website._id : post.clientWebsite._id;
+  const setNewWebsite = (website) => {
+    setWebsite(website);
+    updatePostHandler(website._id, "website");
+  };
+
+  const setNewClientWebsite = (website) => {
+    setClientWebsite(website);
+    updatePostHandler(website._id, "clientWebsite");
+  };
+
+  const updatePostHandler = async (text, fieldToUpdate) => {
     const body = {};
     body[fieldToUpdate] = text;
     // If previous request is not done set input text to previous value
     if (isLoading) return true;
     await sendRequest(
       {
-        url: `/${tableToUpdate}/${id}`,
+        url: `/postRequests/${post._id}`,
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -285,23 +321,20 @@ const PostDetailsDialog = ({ post, setPost, open, setOpen, project, setProject }
             </Box>
             {/* Content */}
             <Box display="flex" flexDirection="column" p="2rem" backgroundColor={theme.palette.background.light} borderRadius="5px" width="100%">
+              {/* Website */}
               <Box display="flex" gap="1rem" alignItems="center">
                 <Typography color={theme.palette.grey[500]}>Website:</Typography>
-                {/* <TextOrInput fontSize="14px" textValue={post.website.url} callback={updatePostHandler} fieldToUpdate="url" tableToUpdate="websites" /> */}
                 {!getWebsitesIsLoading && !getWebsitesError && websiteList && (
                   <Autocomplete
                     {...websiteAutocompleteProps}
-                    value={post.website}
+                    value={website}
                     onChange={async (event, newValue) => {
-                      // console.log(newValue);
-                      // TODO: autocomplete value is invalid, vidi kako da se namesti
-                      const isLoading = await updatePostHandler(newValue._id, "website", "postRequests");
-                      if (!isLoading)
-                        setPost((prevVal) => {
-                          const newVal = { ...prevVal };
-                          newVal.website = { ...newValue };
-                          return newVal;
-                        });
+                      if (newValue) {
+                        const isLoading = await updatePostHandler(newValue._id, "website");
+                        if (!isLoading) {
+                          setNewWebsite(newValue);
+                        }
+                      }
                     }}
                     renderInput={(params) => <TextField {...params} variant="standard" />}
                     sx={{
@@ -321,26 +354,105 @@ const PostDetailsDialog = ({ post, setPost, open, setOpen, project, setProject }
                     }}
                   />
                 )}
+                <Box>
+                  <Tooltip title="Add new website" placement="top" arrow>
+                    <IconButton
+                      onClick={() => {
+                        setOpenWebsiteDialog(true);
+                      }}
+                    >
+                      <Add
+                        sx={{
+                          color: theme.palette.grey.main,
+                          fontSize: "30px",
+                          border: `1px solid ${theme.palette.grey.main}`,
+                          borderRadius: "5px",
+                          ":hover": {
+                            color: theme.palette.grey[900],
+                            backgroundColor: theme.palette.grey.main,
+                          },
+                        }}
+                      />
+                    </IconButton>
+                  </Tooltip>
+                </Box>
               </Box>
               <Divider sx={{ borderColor: theme.palette.grey[700], mt: "1rem", mb: "1rem" }} />
+
+              {/* Anchor */}
               <Box display="flex" gap="1rem" alignItems="center">
                 <Typography color={theme.palette.grey[500]}>Anchor:</Typography>
-                {/* <Typography color={theme.palette.grey[200]}>{post.anchorKeyword}</Typography> */}
-                <TextOrInput fontSize="14px" textValue={post.anchorKeyword} callback={updatePostHandler} fieldToUpdate="anchorKeyword" tableToUpdate="postRequests" />
+                <TextOrInput fontSize="14px" textValue={post.anchorKeyword} callback={updatePostHandler} fieldToUpdate="anchorKeyword" />
               </Box>
               <Divider sx={{ borderColor: theme.palette.grey[700], mt: "1rem", mb: "1rem" }} />
+
+              {/* Client Website */}
               <Box display="flex" gap="3rem">
                 <Box display="flex" gap="1rem" alignItems="center">
                   <Typography color={theme.palette.grey[500]}>Client Website:</Typography>
-                  <Typography color={theme.palette.grey[200]}>{post.clientWebsite.url}</Typography>
-                  {/* <TextOrInput fontSize="14px" textValue={post.clientWebsite.url} callback={updatePostHandler} fieldToUpdate="url" tableToUpdate="clientWebsites" /> */}
+                  {!getClientWebsitesSendIsLoading && !getClientWebsitesSendError && clientWebsiteList && (
+                    <Autocomplete
+                      {...clientWebsiteAutocompleteProps}
+                      value={clientWebsite}
+                      onChange={async (event, newValue) => {
+                        if (newValue) {
+                          const isLoading = await updatePostHandler(newValue._id, "clientWebsite");
+                          if (!isLoading) {
+                            setNewClientWebsite(newValue);
+                          }
+                        }
+                      }}
+                      renderInput={(params) => <TextField {...params} variant="standard" />}
+                      sx={{
+                        "& .MuiAutocomplete-input": {
+                          width: "100% !important",
+                        },
+                        "& .MuiInputBase-root": {
+                          color: `${theme.palette.grey[500]} !important`,
+                        },
+                        "& .MuiInputBase-root::before": {
+                          borderBottom: `1px solid ${theme.palette.grey[200]}`,
+                        },
+                        color: theme.palette.grey[500],
+                        "& .MuiSvgIcon-root": {
+                          color: theme.palette.grey[200],
+                        },
+                      }}
+                    />
+                  )}
+                  <Box>
+                    <Tooltip title="Add new client website" placement="top" arrow>
+                      <IconButton
+                        onClick={() => {
+                          setOpenClientWebsiteDialog(true);
+                        }}
+                      >
+                        <Add
+                          sx={{
+                            color: theme.palette.grey.main,
+                            fontSize: "30px",
+                            border: `1px solid ${theme.palette.grey.main}`,
+                            borderRadius: "5px",
+                            ":hover": {
+                              color: theme.palette.grey[900],
+                              backgroundColor: theme.palette.grey.main,
+                            },
+                          }}
+                        />
+                      </IconButton>
+                    </Tooltip>
+                  </Box>
                 </Box>
+
+                {/* Client Website Status */}
                 <Box display="flex" gap="1rem" alignItems="center">
                   <Typography color={theme.palette.grey[500]}>Client Website Status:</Typography>
                   <Typography color={theme.palette.grey[200]}>{post.clientWebsite.status}</Typography>
                 </Box>
               </Box>
               <Divider sx={{ borderColor: theme.palette.grey[700], mt: "1rem", mb: "1rem" }} />
+
+              {/* Post Category */}
               <Box display="flex" gap="1rem" alignItems="center">
                 <Typography color={theme.palette.grey[500]}>Post Category:</Typography>
                 <FormControl
@@ -353,7 +465,7 @@ const PostDetailsDialog = ({ post, setPost, open, setOpen, project, setProject }
                 >
                   <Select
                     value={post.postCategory}
-                    onChange={(event) => updatePostHandler(event.target.value, "postCategory", "postRequests")}
+                    onChange={(event) => updatePostHandler(event.target.value, "postCategory")}
                     sx={{
                       "::before": {
                         borderBottom: `1px solid ${theme.palette.grey[200]}`,
@@ -373,22 +485,30 @@ const PostDetailsDialog = ({ post, setPost, open, setOpen, project, setProject }
                 </FormControl>
               </Box>
               <Divider sx={{ borderColor: theme.palette.grey[700], mt: "1rem", mb: "1rem" }} />
+
+              {/* Progress Level */}
               <Box display="flex" gap="1rem" alignItems="center">
                 <Typography color={theme.palette.grey[500]}>Progress Level:</Typography>
                 <Typography color={theme.palette.grey[200]}>{getProgress(post.progressLevel)}</Typography>
               </Box>
               <Divider sx={{ borderColor: theme.palette.grey[700], mt: "1rem", mb: "1rem" }} />
+
+              {/* Ugrency Level */}
               <Box display="flex" gap="1rem" alignItems="center">
                 <Typography color={theme.palette.grey[500]}>Urgency Level:</Typography>
-                <TextOrInput fontSize="14px" textValue={post.urgencyLevel} callback={updatePostHandler} fieldToUpdate="urgencyLevel" tableToUpdate="postRequests" />
+                <TextOrInput fontSize="14px" textValue={post.urgencyLevel} callback={updatePostHandler} fieldToUpdate="urgencyLevel" />
               </Box>
               <Divider sx={{ borderColor: theme.palette.grey[700], mt: "1rem", mb: "1rem" }} />
+
+              {/* Word Num */}
               <Box display="flex" gap="1rem" alignItems="center">
                 <Typography color={theme.palette.grey[500]}>Word Number:</Typography>
-                <TextOrInput fontSize="14px" textValue={post.wordNum} callback={updatePostHandler} fieldToUpdate="wordNum" tableToUpdate="postRequests" />
+                <TextOrInput fontSize="14px" textValue={post.wordNum} callback={updatePostHandler} fieldToUpdate="wordNum" />
               </Box>
               <Divider sx={{ borderColor: theme.palette.grey[700], mt: "1rem", mb: "1rem" }} />
+
               <Box display="flex" gap="3rem">
+                {/* Writer */}
                 <Box display="flex" gap="1rem" alignItems="center">
                   <Typography color={theme.palette.grey[500]}>Writer:</Typography>
                   <Button
@@ -412,9 +532,10 @@ const PostDetailsDialog = ({ post, setPost, open, setOpen, project, setProject }
                     <ArrowDropDownOutlined sx={{ color: theme.palette.secondary[300], fontSize: "25px" }} />
                   </Button>
                 </Box>
+
+                {/* Editor */}
                 <Box display="flex" gap="1rem" alignItems="center">
                   <Typography color={theme.palette.grey[500]}>Editor:</Typography>
-
                   <Button
                     onClick={(event) => {
                       setSelectedUserRole("editor");
@@ -470,45 +591,31 @@ const PostDetailsDialog = ({ post, setPost, open, setOpen, project, setProject }
                 </Menu>
               </Box>
               <Divider sx={{ borderColor: theme.palette.grey[700], mt: "1rem", mb: "1rem" }} />
+
+              {/* Created At */}
               <Box display="flex" gap="1rem">
                 <Typography color={theme.palette.grey[500]}>Created At:</Typography>
                 <Typography color={theme.palette.grey[200]}>{getDate(post.createdAt)}</Typography>
               </Box>
               <Divider sx={{ borderColor: theme.palette.grey[700], mt: "1rem", mb: "1rem" }} />
+
+              {/* Updated At */}
               <Box display="flex" gap="1rem">
                 <Typography color={theme.palette.grey[500]}>Updated At:</Typography>
                 <Typography color={theme.palette.grey[200]}>{getDate(post.updatedAt)}</Typography>
               </Box>
             </Box>
           </DialogContent>
-          {/* <DialogActions
-            sx={{
-              backgroundColor: theme.palette.background.default,
-              p: "1.5rem",
-            }}
-          >
-            <Button
-              onClick={() => {
-                setOpen(false);
-              }}
-              sx={{
-                color: theme.palette.grey[200],
-              }}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={() => {
-                // handleConfirm(email);
-                // setEmail("");
-              }}
-              autoFocus
-            >
-              Next Step
-            </Button>
-          </DialogActions> */}
         </Dialog>
       )}
+      <NewWebsiteDialog title="Add New Website" open={openWebsiteDialog} setOpen={setOpenWebsiteDialog} setWebsite={setNewWebsite} setWebsiteList={setWebsiteList} />
+      <NewClientWebsiteDialog
+        title="Add New Client Website"
+        open={openClientWebsiteDialog}
+        setOpen={setOpenClientWebsiteDialog}
+        setClientWebsite={setNewClientWebsite}
+        setClientWebsiteList={setClientWebsiteList}
+      />
     </Box>
   );
 };
