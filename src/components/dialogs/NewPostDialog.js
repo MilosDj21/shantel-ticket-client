@@ -477,7 +477,7 @@ const NewPostDialog = ({ title, open, setOpen, project, setProject = null }) => 
                 </Typography>
               </Box>
               <Box>
-                <Tooltip title="Add new client clientWebsite" placement="top" arrow>
+                <Tooltip title="Add new client website" placement="top" arrow>
                   <IconButton
                     onClick={() => {
                       setOpenClientWebsiteDialog(true);
