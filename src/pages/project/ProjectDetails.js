@@ -244,16 +244,27 @@ const ProjectDetails = () => {
       field: "clientWebsite",
       headerName: "Client Website",
       flex: 1,
+      valueGetter: (params) => {
+        if (params.row.clientLink) {
+          return params.row.clientLink.clientWebsite.url;
+        } else {
+          return null;
+        }
+      },
       renderCell: (params) => {
-        return params.value.url;
+        return params.value;
       },
     },
     {
       field: "clientWebsiteCategory",
-      headerName: "ClientWebsite Status",
+      headerName: "Client Status",
       flex: 0.4,
       valueGetter: (params) => {
-        return params.row.clientWebsite.status;
+        if (params.row.clientLink) {
+          return params.row.clientLink.clientWebsite.status;
+        } else {
+          return null;
+        }
       },
       renderCell: (params) => {
         let clientWebsiteStatusColor = theme.palette.grey.main;
