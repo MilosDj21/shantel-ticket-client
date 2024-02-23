@@ -6,6 +6,7 @@ import TextOrInput from "../TextOrInput";
 import useHttp from "../../hooks/use-http";
 import NewWebsiteDialog from "./NewWebsiteDialog";
 import NewClientWebsiteDialog from "./NewClientWebsiteDialog";
+import NewClientLinkDialog from "./NewClientLinkDialog";
 
 const serverAddress = process.env.ENVIRONMENT === "production" ? process.env.REACT_APP_PROD_BASE_URL : process.env.REACT_APP_DEV_BASE_URL;
 
@@ -18,6 +19,7 @@ const PostDetailsDialog = ({ post, setPost, open, setOpen, project, setProject }
   const { isLoading, sendRequest } = useHttp();
   const { isLoading: getWebsitesIsLoading, error: getWebsitesError, sendRequest: getWebsitesSendRequest } = useHttp();
   const { isLoading: getClientWebsitesSendIsLoading, error: getClientWebsitesSendError, sendRequest: getClientWebsitesSendRequest } = useHttp();
+  const { isLoading: getClientLinksSendIsLoading, error: getClientLinksSendError, sendRequest: getClientLinksSendRequest } = useHttp();
   const [users, setUsers] = useState([]);
   const [userMenuAnchorEl, setUserMenuAnchorEl] = useState(null);
   const [selectedUserRole, setSelectedUserRole] = useState(null);
@@ -25,8 +27,12 @@ const PostDetailsDialog = ({ post, setPost, open, setOpen, project, setProject }
   const [websiteList, setWebsiteList] = useState(null);
   const [clientWebsite, setClientWebsite] = useState(null);
   const [clientWebsiteList, setClientWebsiteList] = useState(null);
+  const [clientLink, setClientLink] = useState(null);
+  const [clientLinkList, setClientLinkList] = useState(null);
+  const [clientFilteredLinkList, setClientFilteredLinkList] = useState(null);
   const [openWebsiteDialog, setOpenWebsiteDialog] = useState(false);
   const [openClientWebsiteDialog, setOpenClientWebsiteDialog] = useState(false);
+  const [openClientLinkDialog, setOpenClientLinkDialog] = useState(false);
 
   const userMenuIsOpen = Boolean(userMenuAnchorEl);
 
@@ -40,6 +46,12 @@ const PostDetailsDialog = ({ post, setPost, open, setOpen, project, setProject }
     getOptionLabel: (option) => option.url,
   };
 
+  const clientLinkAutocompleteProps = {
+    options: clientFilteredLinkList,
+    getOptionLabel: (option) => option.url,
+  };
+
+  // Set website value from website list
   useEffect(() => {
     if (post && !website && websiteList) {
       for (const w of websiteList) {
@@ -51,10 +63,11 @@ const PostDetailsDialog = ({ post, setPost, open, setOpen, project, setProject }
     if (!open) setWebsite(null);
   }, [post, website, websiteList, open]);
 
+  // Set client website value from client website list
   useEffect(() => {
     if (post && !clientWebsite && clientWebsiteList) {
       for (const w of clientWebsiteList) {
-        if (post.clientWebsite._id === w._id) {
+        if (post.clientLink.clientWebsite._id === w._id) {
           setClientWebsite(w);
         }
       }
@@ -62,6 +75,35 @@ const PostDetailsDialog = ({ post, setPost, open, setOpen, project, setProject }
     if (!open) setClientWebsite(null);
   }, [post, clientWebsite, clientWebsiteList, open]);
 
+  // Set client link value from client link list
+  // TODO: vidi zasto ovako daje gresku da je invalid vrednost za autocomplete
+  useEffect(() => {
+    if (post && !clientLink && clientFilteredLinkList) {
+      for (const l of clientFilteredLinkList) {
+        if (post.clientLink._id === l._id) {
+          setClientLink(l);
+        }
+      }
+    }
+    if (!open) setClientLink(null);
+  }, [post, clientLink, clientFilteredLinkList, open, clientWebsite]);
+
+  // Filter client link list to show only links for that website
+  useEffect(() => {
+    if (clientWebsite) {
+      setClientFilteredLinkList(() => {
+        const tempList = clientLinkList.filter((l) => {
+          return l.url.includes(clientWebsite.url);
+        });
+        if (tempList.length === 0) {
+          setClientLink(null);
+        }
+        return tempList;
+      });
+    }
+  }, [clientWebsite, clientLinkList]);
+
+  // Get initial data
   useEffect(() => {
     sendRequest(
       {
@@ -102,7 +144,20 @@ const PostDetailsDialog = ({ post, setPost, open, setOpen, project, setProject }
         setClientWebsiteList(clientWebsitesData);
       }
     );
-  }, [sendRequest, getWebsitesSendRequest, getClientWebsitesSendRequest]);
+    getClientLinksSendRequest(
+      {
+        url: "/clientLinks",
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      },
+      (clientLinkData) => {
+        console.log("clientLinks", clientLinkData);
+        setClientLinkList(clientLinkData);
+      }
+    );
+  }, [sendRequest, getWebsitesSendRequest, getClientWebsitesSendRequest, getClientLinksSendRequest]);
 
   const getDate = (dateStr) => {
     const date = new Date(dateStr);
@@ -115,14 +170,18 @@ const PostDetailsDialog = ({ post, setPost, open, setOpen, project, setProject }
     return `${day}-${month}-${year} ${hour}:${minutes}:${seconds}`;
   };
 
-  const setNewWebsite = (website) => {
-    setWebsite(website);
-    updatePostHandler(website._id, "website");
+  const setNewWebsite = async (website) => {
+    const isLoading = await updatePostHandler(website._id, "website");
+    if (!isLoading) {
+      setWebsite(website);
+    }
   };
 
-  const setNewClientWebsite = (website) => {
-    setClientWebsite(website);
-    updatePostHandler(website._id, "clientWebsite");
+  const setNewClientLink = async (link) => {
+    const isLoading = await updatePostHandler(link._id, "clientLink");
+    if (!isLoading) {
+      setClientLink(link);
+    }
   };
 
   const updatePostHandler = async (text, fieldToUpdate) => {
@@ -139,8 +198,8 @@ const PostDetailsDialog = ({ post, setPost, open, setOpen, project, setProject }
         },
         body,
       },
-      (data) => {
-        console.log(data);
+      (postData) => {
+        console.log("post:", postData);
       }
     );
     // Refresh project details
@@ -330,10 +389,7 @@ const PostDetailsDialog = ({ post, setPost, open, setOpen, project, setProject }
                     value={website}
                     onChange={async (event, newValue) => {
                       if (newValue) {
-                        const isLoading = await updatePostHandler(newValue._id, "website");
-                        if (!isLoading) {
-                          setNewWebsite(newValue);
-                        }
+                        setNewWebsite(newValue);
                       }
                     }}
                     renderInput={(params) => <TextField {...params} variant="standard" />}
@@ -396,10 +452,7 @@ const PostDetailsDialog = ({ post, setPost, open, setOpen, project, setProject }
                       value={clientWebsite}
                       onChange={async (event, newValue) => {
                         if (newValue) {
-                          const isLoading = await updatePostHandler(newValue._id, "clientWebsite");
-                          if (!isLoading) {
-                            setNewClientWebsite(newValue);
-                          }
+                          setClientWebsite(newValue);
                         }
                       }}
                       renderInput={(params) => <TextField {...params} variant="standard" />}
@@ -447,7 +500,64 @@ const PostDetailsDialog = ({ post, setPost, open, setOpen, project, setProject }
                 {/* Client Website Status */}
                 <Box display="flex" gap="1rem" alignItems="center">
                   <Typography color={theme.palette.grey[500]}>Client Website Status:</Typography>
-                  <Typography color={theme.palette.grey[200]}>{post.clientWebsite.status}</Typography>
+                  <Typography color={theme.palette.grey[200]}>{post.clientLink ? post.clientLink.clientWebsite.status : ""}</Typography>
+                </Box>
+              </Box>
+              <Divider sx={{ borderColor: theme.palette.grey[700], mt: "1rem", mb: "1rem" }} />
+
+              {/* Client Link */}
+              <Box display="flex" gap="3rem">
+                <Box display="flex" gap="1rem" alignItems="center">
+                  <Typography color={theme.palette.grey[500]}>Client Link:</Typography>
+                  {!getClientLinksSendIsLoading && !getClientLinksSendError && clientLinkList && clientFilteredLinkList && (
+                    <Autocomplete
+                      {...clientLinkAutocompleteProps}
+                      value={clientLink}
+                      onChange={async (event, newValue) => {
+                        if (newValue) {
+                          setNewClientLink(newValue);
+                        }
+                      }}
+                      renderInput={(params) => <TextField {...params} variant="standard" />}
+                      sx={{
+                        "& .MuiAutocomplete-input": {
+                          width: "100% !important",
+                        },
+                        "& .MuiInputBase-root": {
+                          color: `${theme.palette.grey[500]} !important`,
+                        },
+                        "& .MuiInputBase-root::before": {
+                          borderBottom: `1px solid ${theme.palette.grey[200]}`,
+                        },
+                        color: theme.palette.grey[500],
+                        "& .MuiSvgIcon-root": {
+                          color: theme.palette.grey[200],
+                        },
+                      }}
+                    />
+                  )}
+                  <Box>
+                    <Tooltip title="Add new client link" placement="top" arrow>
+                      <IconButton
+                        onClick={() => {
+                          setOpenClientLinkDialog(true);
+                        }}
+                      >
+                        <Add
+                          sx={{
+                            color: theme.palette.grey.main,
+                            fontSize: "30px",
+                            border: `1px solid ${theme.palette.grey.main}`,
+                            borderRadius: "5px",
+                            ":hover": {
+                              color: theme.palette.grey[900],
+                              backgroundColor: theme.palette.grey.main,
+                            },
+                          }}
+                        />
+                      </IconButton>
+                    </Tooltip>
+                  </Box>
                 </Box>
               </Box>
               <Divider sx={{ borderColor: theme.palette.grey[700], mt: "1rem", mb: "1rem" }} />
@@ -608,14 +718,26 @@ const PostDetailsDialog = ({ post, setPost, open, setOpen, project, setProject }
           </DialogContent>
         </Dialog>
       )}
-      <NewWebsiteDialog title="Add New Website" open={openWebsiteDialog} setOpen={setOpenWebsiteDialog} setWebsite={setNewWebsite} setWebsiteList={setWebsiteList} />
-      <NewClientWebsiteDialog
-        title="Add New Client Website"
-        open={openClientWebsiteDialog}
-        setOpen={setOpenClientWebsiteDialog}
-        setClientWebsite={setNewClientWebsite}
-        setClientWebsiteList={setClientWebsiteList}
-      />
+      {openWebsiteDialog && <NewWebsiteDialog title="Add New Website" open={openWebsiteDialog} setOpen={setOpenWebsiteDialog} setWebsite={setNewWebsite} setWebsiteList={setWebsiteList} />}
+      {openClientWebsiteDialog && (
+        <NewClientWebsiteDialog
+          title="Add New Client Website"
+          open={openClientWebsiteDialog}
+          setOpen={setOpenClientWebsiteDialog}
+          setClientWebsite={setClientWebsite}
+          setClientWebsiteList={setClientWebsiteList}
+        />
+      )}
+      {openClientLinkDialog && clientWebsite && (
+        <NewClientLinkDialog
+          title="Add New Client Link"
+          open={openClientLinkDialog}
+          setOpen={setOpenClientLinkDialog}
+          setClientLink={setNewClientLink}
+          setClientLinkList={setClientLinkList}
+          clientWebsite={clientWebsite}
+        />
+      )}
     </Box>
   );
 };
