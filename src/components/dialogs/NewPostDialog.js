@@ -43,6 +43,7 @@ const NewPostDialog = ({ title, open, setOpen, project, setProject = null }) => 
   const [clientWebsiteList, setClientWebsiteList] = useState(null);
   const [clientLink, setClientLink] = useState(null);
   const [clientLinkList, setClientLinkList] = useState(null);
+  const [clientFilteredLinkList, setClientFilteredLinkList] = useState(null);
   const [urgency, setUrgency] = useState("");
   const [postCategory, setPostCategory] = useState("Placeni");
   const [wordNum, setWordNum] = useState("");
@@ -82,7 +83,7 @@ const NewPostDialog = ({ title, open, setOpen, project, setProject = null }) => 
   };
 
   const clientLinkAutocompleteProps = {
-    options: clientLinkList,
+    options: clientFilteredLinkList,
     getOptionLabel: (option) => option.url,
   };
 
@@ -128,17 +129,16 @@ const NewPostDialog = ({ title, open, setOpen, project, setProject = null }) => 
     );
   }, [getWebsitesSendRequest, getClientWebsitesSendRequest, getClientLinksSendRequest]);
 
-  // TODO: vidi dal ovako radi
   useEffect(() => {
     if (clientWebsite) {
       setClientLink(null);
-      setClientLinkList((prevVal) => {
-        return prevVal.filter((l) => {
-          return l.url.includes(clientWebsite);
+      setClientFilteredLinkList(() => {
+        return clientLinkList.filter((l) => {
+          return l.url.includes(clientWebsite.url);
         });
       });
     }
-  }, [clientWebsite]);
+  }, [clientWebsite, clientLinkList]);
 
   const createPostHandler = async () => {
     let post = null;
@@ -553,7 +553,7 @@ const NewPostDialog = ({ title, open, setOpen, project, setProject = null }) => 
                 >
                   Client Link
                 </Typography>
-                {!getClientLinksSendIsLoading && !getClientLinksSendError && clientLinkList && (
+                {!getClientLinksSendIsLoading && !getClientLinksSendError && clientLinkList && clientFilteredLinkList && (
                   <Autocomplete
                     {...clientLinkAutocompleteProps}
                     value={clientLink}
