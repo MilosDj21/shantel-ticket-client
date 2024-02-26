@@ -9,6 +9,7 @@ import TextOrInput from "../../components/TextOrInput";
 import TaskColumn from "../../components/TaskColumn";
 import NewPostDialog from "../../components/dialogs/NewPostDialog";
 import PostDetailsDialog from "../../components/dialogs/PostDetailsDialog";
+import TaskMessagesDialog from "../../components/dialogs/TaskMessagesDialog";
 
 const serverAddress = process.env.ENVIRONMENT === "production" ? process.env.REACT_APP_PROD_BASE_URL : process.env.REACT_APP_DEV_BASE_URL;
 
@@ -17,9 +18,11 @@ const ProjectDetails = () => {
   const { projectId } = useParams();
   const { isLoading, error, sendRequest } = useHttp();
   const [data, setData] = useState("");
-  const [selectedPost, setSelectedPost] = useState(null);
   const [openNewPostDialog, setOpenNewPostDialog] = useState(false);
+  const [selectedPost, setSelectedPost] = useState(null);
   const [openSelectedPostDialog, setOpenSelectedPostDialog] = useState(false);
+  const [selectedTask, setSelectedTask] = useState(null);
+  const [openSelectedTaskDialog, setOpenSelectedTaskDialog] = useState(null);
 
   // RETRIEVE INITIAL DATA FROM SERVER
   useEffect(() => {
@@ -42,6 +45,11 @@ const ProjectDetails = () => {
     console.log(params.row);
     setSelectedPost(params.row);
     setOpenSelectedPostDialog(true);
+  };
+
+  const taskClickHandle = async (task) => {
+    setSelectedTask(task);
+    setOpenSelectedTaskDialog(true);
   };
 
   const tableButtonClickHandle = async (params) => {
@@ -451,12 +459,13 @@ const ProjectDetails = () => {
       {data && !isLoading && (
         <Box display="flex" m="2.5rem">
           {data.groups.map((c) => {
-            return <TaskColumn key={c._id} column={c} />;
+            return <TaskColumn key={c._id} column={c} callback={taskClickHandle} />;
           })}
         </Box>
       )}
       <NewPostDialog title="Add New Post" open={openNewPostDialog} setOpen={setOpenNewPostDialog} project={data} setProject={setData} />
       <PostDetailsDialog post={selectedPost} setPost={setSelectedPost} open={openSelectedPostDialog} setOpen={setOpenSelectedPostDialog} project={data} setProject={setData} />
+      <TaskMessagesDialog task={selectedTask} setTask={setSelectedTask} open={openSelectedTaskDialog} setOpen={setOpenSelectedTaskDialog} project={data} setProject={setData} />
     </Fragment>
   );
 };
