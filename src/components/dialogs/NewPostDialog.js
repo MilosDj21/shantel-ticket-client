@@ -229,7 +229,6 @@ const NewPostDialog = ({ title, open, setOpen, project, setProject = null }) => 
               "Content-Type": "application/json",
             },
             body: {
-              dueTime: post.urgencyLevel,
               post: post._id,
               group: groupId,
             },
