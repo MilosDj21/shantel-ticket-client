@@ -1,7 +1,7 @@
 import { Box, useTheme, Typography } from "@mui/material";
 import TaskSingle from "./TaskSingle";
 
-const TaskColumn = ({ column }) => {
+const TaskColumn = ({ column, callback }) => {
   const theme = useTheme();
 
   return (
@@ -21,7 +21,7 @@ const TaskColumn = ({ column }) => {
         {column.title}
       </Typography>
       {column.tasks.map((t) => (
-        <TaskSingle key={t._id} title={t.post.title} msgNum={t.messages.length} assignedUser={t.assignedUser} />
+        <TaskSingle key={t._id} task={t} callback={callback} />
       ))}
     </Box>
   );

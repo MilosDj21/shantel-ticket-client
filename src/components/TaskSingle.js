@@ -2,7 +2,7 @@ import { Box, Typography, useTheme } from "@mui/material";
 
 const serverAddress = process.env.ENVIRONMENT === "production" ? process.env.REACT_APP_PROD_BASE_URL : process.env.REACT_APP_DEV_BASE_URL;
 
-const TaskSingle = ({ title, msgNum, assignedUser }) => {
+const TaskSingle = ({ task, callback }) => {
   const theme = useTheme();
 
   return (
@@ -19,16 +19,19 @@ const TaskSingle = ({ title, msgNum, assignedUser }) => {
           borderColor: theme.palette.grey[700],
         },
       }}
+      onClick={() => {
+        callback(task);
+      }}
     >
       <Typography fontSize="0.80rem" mb="1.5rem">
-        {title}
+        {task.post.title}
       </Typography>
       <Box display="flex" justifyContent="space-between">
-        {assignedUser ? (
+        {task.assignedUser ? (
           <Box
             component="img"
             alt="profile"
-            src={serverAddress + "/" + assignedUser.profileImage}
+            src={serverAddress + "/" + task.assignedUser.profileImage}
             crossOrigin="use-credentials"
             height="32px"
             width="32px"
@@ -47,7 +50,7 @@ const TaskSingle = ({ title, msgNum, assignedUser }) => {
             borderRadius: "20px 20px 20px 0",
           }}
         >
-          {msgNum}
+          {task.messages.length}
         </Typography>
       </Box>
     </Box>
