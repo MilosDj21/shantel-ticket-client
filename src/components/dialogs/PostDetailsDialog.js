@@ -76,9 +76,8 @@ const PostDetailsDialog = ({ post, setPost, open, setOpen, project, setProject }
   }, [post, clientWebsite, clientWebsiteList, open]);
 
   // Set client link value from client link list
-  // TODO: vidi zasto ovako daje gresku da je invalid vrednost za autocomplete
   useEffect(() => {
-    if (post && !clientLink && clientFilteredLinkList) {
+    if (post && clientFilteredLinkList) {
       for (const l of clientFilteredLinkList) {
         if (post.clientLink._id === l._id) {
           setClientLink(l);
@@ -86,7 +85,7 @@ const PostDetailsDialog = ({ post, setPost, open, setOpen, project, setProject }
       }
     }
     if (!open) setClientLink(null);
-  }, [post, clientLink, clientFilteredLinkList, open, clientWebsite]);
+  }, [post, clientFilteredLinkList, open]);
 
   // Filter client link list to show only links for that website
   useEffect(() => {
@@ -452,6 +451,7 @@ const PostDetailsDialog = ({ post, setPost, open, setOpen, project, setProject }
                       value={clientWebsite}
                       onChange={async (event, newValue) => {
                         if (newValue) {
+                          setClientLink(null);
                           setClientWebsite(newValue);
                         }
                       }}
