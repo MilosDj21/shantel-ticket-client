@@ -21,7 +21,7 @@ const TaskColumn = ({ column }) => {
         {column.title}
       </Typography>
       {column.tasks.map((t) => (
-        <TaskSingle key={t._id} title={t.title} msgNum={t.messages.length} assignedUser={t.assignedUser} />
+        <TaskSingle key={t._id} title={t.post.title} msgNum={t.messages.length} assignedUser={t.assignedUser} />
       ))}
     </Box>
   );

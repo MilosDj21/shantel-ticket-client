@@ -101,7 +101,6 @@ const ProjectDetails = () => {
             "Content-Type": "application/json",
           },
           body: {
-            title: params.title,
             dueTime: params.urgencyLevel,
             assignedUser: assignedUserId,
             post: params._id,

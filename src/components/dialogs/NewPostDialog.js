@@ -161,7 +161,7 @@ const NewPostDialog = ({ title, open, setOpen, project, setProject = null }) => 
           postCategory,
           progressLevel,
           anchorKeyword: anchor,
-          clientWebsite: clientWebsite._id,
+          clientLink: clientLink._id,
           urgencyLevel: urgency,
           wordNum,
           project: project._id,
@@ -181,7 +181,7 @@ const NewPostDialog = ({ title, open, setOpen, project, setProject = null }) => 
       }
     );
     // If post is saved ok, and clientWebsite in that post is not checked create new task
-    if (post && post.clientWebsite.status === "Neproveren") {
+    if (post && post.clientLink.clientWebsite.status === "Neproveren") {
       // Check if group for checking post is already in project
       let groupId = null;
       for (const group of project.groups) {
@@ -229,7 +229,6 @@ const NewPostDialog = ({ title, open, setOpen, project, setProject = null }) => 
               "Content-Type": "application/json",
             },
             body: {
-              title: post.title,
               dueTime: post.urgencyLevel,
               post: post._id,
               group: groupId,
