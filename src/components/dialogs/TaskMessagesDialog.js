@@ -15,6 +15,7 @@ const TaskMessagesDialog = ({ task, setTask, open, setOpen, project, setProject 
 
   const saveMessageHandler = async (message, image) => {
     if (!message) return;
+    const o = open;
 
     let newMessage = null;
 
@@ -52,7 +53,8 @@ const TaskMessagesDialog = ({ task, setTask, open, setOpen, project, setProject 
           setProject(projectData);
           setTask((prevVal) => {
             const newVal = { ...prevVal };
-            newVal.messages = [newMessage, ...prevVal.messages];
+            newVal.messages = [...prevVal.messages, newMessage];
+            return newVal;
           });
         }
       );
@@ -79,6 +81,7 @@ const TaskMessagesDialog = ({ task, setTask, open, setOpen, project, setProject 
               height: "100%",
               maxHeight: "100%",
               m: "0",
+              color: theme.palette.grey[200],
             },
           }}
         >
