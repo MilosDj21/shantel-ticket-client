@@ -21,7 +21,7 @@ const TaskMessageSingle = ({ message }) => {
   return (
     <Fragment>
       {message && (
-        <Box display="flex" flexDirection="column" gap="0.5rem" mb="2rem">
+        <Box display="flex" flexDirection="column" gap="0.3rem" mb="2rem">
           {/* Message header */}
           <Box display="flex" gap="0.5rem" alignItems="center">
             <Box
@@ -49,6 +49,9 @@ const TaskMessageSingle = ({ message }) => {
             color={theme.palette.grey[200]}
             sx={{
               wordBreak: "break-all",
+              "& p": {
+                margin: 0,
+              },
             }}
           >
             {parse(message.message)}
