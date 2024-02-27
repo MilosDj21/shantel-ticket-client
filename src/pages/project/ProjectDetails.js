@@ -470,9 +470,13 @@ const ProjectDetails = () => {
           })}
         </Box>
       )}
-      <NewPostDialog title="Add New Post" open={openNewPostDialog} setOpen={setOpenNewPostDialog} project={data} setProject={setData} />
-      <PostDetailsDialog post={selectedPost} setPost={setSelectedPost} open={openSelectedPostDialog} setOpen={setOpenSelectedPostDialog} project={data} setProject={setData} />
-      <TaskMessagesDialog task={selectedTask} setTask={setSelectedTask} open={openSelectedTaskDialog} setOpen={setOpenSelectedTaskDialog} project={data} setProject={setData} />
+      {openNewPostDialog && <NewPostDialog title="Add New Post" open={openNewPostDialog} setOpen={setOpenNewPostDialog} project={data} setProject={setData} />}
+      {openSelectedPostDialog && (
+        <PostDetailsDialog post={selectedPost} setPost={setSelectedPost} open={openSelectedPostDialog} setOpen={setOpenSelectedPostDialog} project={data} setProject={setData} />
+      )}
+      {openSelectedTaskDialog && (
+        <TaskMessagesDialog task={selectedTask} setTask={setSelectedTask} open={openSelectedTaskDialog} setOpen={setOpenSelectedTaskDialog} project={data} setProject={setData} />
+      )}
     </Fragment>
   );
 };
