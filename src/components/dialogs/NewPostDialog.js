@@ -131,11 +131,14 @@ const NewPostDialog = ({ title, open, setOpen, project, setProject = null }) => 
 
   useEffect(() => {
     if (clientWebsite) {
-      setClientLink(null);
       setClientFilteredLinkList(() => {
-        return clientLinkList.filter((l) => {
+        const tempList = clientLinkList.filter((l) => {
           return l.url.includes(clientWebsite.url);
         });
+        if (tempList.length === 0) {
+          setClientLink(null);
+        }
+        return tempList;
       });
     }
   }, [clientWebsite, clientLinkList]);
@@ -477,6 +480,7 @@ const NewPostDialog = ({ title, open, setOpen, project, setProject = null }) => 
                     {...clientWebsiteAutocompleteProps}
                     value={clientWebsite}
                     onChange={(event, newValue) => {
+                      setClientLink(null);
                       setClientWebsite(newValue);
                     }}
                     renderInput={(params) => <TextField {...params} variant="standard" />}
@@ -556,6 +560,11 @@ const NewPostDialog = ({ title, open, setOpen, project, setProject = null }) => 
                     {...clientLinkAutocompleteProps}
                     value={clientLink}
                     onChange={(event, newValue) => {
+                      if (!clientLinkList.includes(newValue)) {
+                        setClientLinkList((prevVal) => {
+                          return [newValue, ...prevVal];
+                        });
+                      }
                       setClientLink(newValue);
                     }}
                     renderInput={(params) => <TextField {...params} variant="standard" />}
@@ -736,7 +745,7 @@ const NewPostDialog = ({ title, open, setOpen, project, setProject = null }) => 
           open={openClientLinkDialog}
           setOpen={setOpenClientLinkDialog}
           setClientLink={setClientLink}
-          setClientLinkList={setClientLinkList}
+          setClientLinkList={setClientFilteredLinkList}
           clientWebsite={clientWebsite}
         />
       )}
