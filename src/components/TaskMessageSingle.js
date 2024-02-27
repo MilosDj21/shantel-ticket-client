@@ -47,6 +47,9 @@ const TaskMessageSingle = ({ message }) => {
           <Box
             ml="calc(0.5rem + 32px)"
             color={theme.palette.grey[200]}
+            display="flex"
+            flexDirection="column"
+            gap="0.5rem"
             sx={{
               wordBreak: "break-all",
               "& p": {
@@ -55,6 +58,11 @@ const TaskMessageSingle = ({ message }) => {
             }}
           >
             {parse(message.message)}
+
+            {/* Image */}
+            {message.image && (
+              <Box component="img" alt="message image" src={serverAddress + "/" + message.image} maxWidth="30%" crossOrigin="use-credentials" sx={{ objectFit: "cover", borderRadius: "5px" }} />
+            )}
           </Box>
         </Box>
       )}
