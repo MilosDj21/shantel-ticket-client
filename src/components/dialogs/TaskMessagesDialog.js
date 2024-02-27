@@ -99,9 +99,11 @@ const TaskMessagesDialog = ({ task, setTask, open, setOpen, project, setProject 
             </Box>
 
             {/* Messages */}
-            {task.messages.map((m) => {
-              return <TaskMessageSingle key={m._id} message={m} />;
-            })}
+            <Box backgroundColor={theme.palette.background.light} borderRadius="5px" padding="1rem" mb="2rem">
+              {task.messages.map((m) => {
+                return <TaskMessageSingle key={m._id} message={m} />;
+              })}
+            </Box>
 
             {/* TEXT EDITOR */}
             <Box>
