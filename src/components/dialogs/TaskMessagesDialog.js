@@ -11,11 +11,10 @@ const Transition = React.forwardRef(function Transition(props, ref) {
 
 const TaskMessagesDialog = ({ task, setTask, open, setOpen, project, setProject }) => {
   const theme = useTheme();
-  const { isLoading, error, sendRequest } = useHttp();
+  const { isLoading, sendRequest } = useHttp();
 
   const saveMessageHandler = async (message, image) => {
     if (!message) return;
-    const o = open;
 
     let newMessage = null;
 
