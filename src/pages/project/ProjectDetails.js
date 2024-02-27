@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { DataGrid } from "@mui/x-data-grid";
 import { Button, Box, useTheme, IconButton, Tooltip, Typography } from "@mui/material";
 import { Add } from "@mui/icons-material";
@@ -16,6 +16,7 @@ const serverAddress = process.env.ENVIRONMENT === "production" ? process.env.REA
 const ProjectDetails = () => {
   const theme = useTheme();
   const { projectId } = useParams();
+  const navigate = useNavigate();
   const { isLoading, error, sendRequest } = useHttp();
   const [data, setData] = useState("");
   const [openNewPostDialog, setOpenNewPostDialog] = useState(false);
@@ -26,20 +27,26 @@ const ProjectDetails = () => {
 
   // RETRIEVE INITIAL DATA FROM SERVER
   useEffect(() => {
-    sendRequest(
-      {
-        url: `/projects/${projectId}`,
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
+    const getData = async () => {
+      let isSuccessfull = false;
+      await sendRequest(
+        {
+          url: `/projects/${projectId}`,
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
         },
-      },
-      (projectData) => {
-        console.log("project:", projectData);
-        setData(projectData);
-      }
-    );
-  }, [sendRequest, projectId]);
+        (projectData) => {
+          console.log("project:", projectData);
+          isSuccessfull = true;
+          setData(projectData);
+        }
+      );
+      if (!isSuccessfull) navigate("/projects");
+    };
+    getData();
+  }, [sendRequest, projectId, navigate]);
 
   const rowClickHandle = async (params) => {
     console.log(params.row);
