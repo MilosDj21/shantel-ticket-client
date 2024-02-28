@@ -34,7 +34,7 @@ const TaskMessagesDialog = ({ task, setTask, open, setOpen, project, setProject 
       },
       (messageData) => {
         newMessage = messageData;
-      }
+      },
     );
 
     // Refresh project details, if message saved successfully
@@ -55,7 +55,7 @@ const TaskMessagesDialog = ({ task, setTask, open, setOpen, project, setProject 
             newVal.messages = [...prevVal.messages, newMessage];
             return newVal;
           });
-        }
+        },
       );
     }
   };
@@ -82,8 +82,7 @@ const TaskMessagesDialog = ({ task, setTask, open, setOpen, project, setProject 
               m: "0",
               color: theme.palette.grey[200],
             },
-          }}
-        >
+          }}>
           <DialogContent
             sx={{
               backgroundColor: theme.palette.background.default,
@@ -91,8 +90,7 @@ const TaskMessagesDialog = ({ task, setTask, open, setOpen, project, setProject 
               justifyContent: "start",
               flexDirection: "column",
               pt: "0",
-            }}
-          >
+            }}>
             {/* Title */}
             <Box display="flex" justifyContent="center" p="3rem 0">
               <Typography variant="h2">{task.post.title}</Typography>
@@ -100,9 +98,13 @@ const TaskMessagesDialog = ({ task, setTask, open, setOpen, project, setProject 
 
             {/* Messages */}
             <Box backgroundColor={theme.palette.background.light} borderRadius="5px" padding="1rem" mb="2rem">
-              {task.messages.map((m) => {
-                return <TaskMessageSingle key={m._id} message={m} />;
-              })}
+              {task.messages.length > 0 ? (
+                task.messages.map((m) => {
+                  return <TaskMessageSingle key={m._id} message={m} />;
+                })
+              ) : (
+                <Typography variant="h4" textAlign='center'>No Messages</Typography>
+              )}
             </Box>
 
             {/* TEXT EDITOR */}
