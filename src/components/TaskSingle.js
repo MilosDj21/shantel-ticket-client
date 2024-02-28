@@ -9,7 +9,7 @@ const TaskSingle = ({ task, callback }) => {
     <Box
       sx={{
         width: "100%",
-        backgroundColor: theme.palette.background.light,
+        backgroundColor: task.status === "New" ? "#38753b" : task.status === "In Progress" ? "#777539" : "#723737",
         p: "0.4rem",
         m: "0.4rem 0",
         cursor: "pointer",
@@ -21,8 +21,7 @@ const TaskSingle = ({ task, callback }) => {
       }}
       onClick={() => {
         callback(task);
-      }}
-    >
+      }}>
       <Typography fontSize="0.80rem" mb="1.5rem">
         {task.post.title}
       </Typography>
@@ -46,10 +45,9 @@ const TaskSingle = ({ task, callback }) => {
             fontSize: "0.60rem",
             p: "0.2rem 0.5rem",
             m: "5px 0",
-            backgroundColor: theme.palette.secondary[700],
+            backgroundColor: theme.palette.background.default,
             borderRadius: "20px 20px 20px 0",
-          }}
-        >
+          }}>
           {task.messages.length}
         </Typography>
       </Box>
