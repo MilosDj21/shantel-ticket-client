@@ -26,6 +26,7 @@ import EditMessage from "./pages/admin/tech-ticket/EditMessage";
 import AllProjects from "./pages/project/AllProjects";
 import NewProject from "./pages/project/NewProject";
 import ProjectDetails from "./pages/project/ProjectDetails";
+import AllTasks from "./pages/project/AllTasks";
 
 const router = createBrowserRouter([
   {
@@ -49,6 +50,15 @@ const router = createBrowserRouter([
           { index: true, element: <AllProjects /> },
           { path: "new", element: <NewProject /> },
           { path: ":projectId", element: <ProjectDetails /> },
+        ],
+      },
+      {
+        path: "tasks",
+        element: <Outlet />,
+        children: [
+          { index: true, element: <AllTasks /> },
+          // { path: "new", element: <NewProject /> },
+          // { path: ":projectId", element: <ProjectDetails /> },
         ],
       },
       {
