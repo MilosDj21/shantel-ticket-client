@@ -45,6 +45,23 @@ const useSidebarItems = () => {
         link: "projects/new",
       },
     ];
+    const websiteCheckerItems = [
+      {
+        text: "Tasks",
+        icon: null,
+        link: null,
+      },
+      {
+        text: "All Tasks",
+        icon: <Assignment />,
+        link: "tasks",
+      },
+      // {
+      //   text: "New Project",
+      //   icon: <Assignment />,
+      //   link: "projects/new",
+      // },
+    ];
     const adminItems = [
       {
         text: "Admin",
@@ -95,6 +112,7 @@ const useSidebarItems = () => {
     } else if (rolesNames.includes("Editor")) {
     } else if (rolesNames.includes("Copywrighter")) {
     } else if (rolesNames.includes("Website Checker")) {
+      finishedItems.push(...websiteCheckerItems);
     }
     return finishedItems;
   }, []);
