@@ -90,7 +90,7 @@ const useHttp = () => {
       }
       setIsLoading(false);
     },
-    [dispatch, serverAddress]
+    [dispatch, serverAddress],
   );
 
   return {
