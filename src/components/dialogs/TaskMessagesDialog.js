@@ -1,19 +1,29 @@
-import React from "react";
-import { Box, Typography, Dialog, DialogContent, useTheme, Slide } from "@mui/material";
+import React, { useMemo } from "react";
+import { Box, Typography, Dialog, DialogContent, useTheme, Slide, FormControl, Select, MenuItem, Divider } from "@mui/material";
 import TaskMessageSingle from "../TaskMessageSingle";
 
 import TextEditor from "../TextEditor";
 import useHttp from "../../hooks/use-http";
+import { useSelector } from "react-redux";
 
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="left" ref={ref} {...props} />;
 });
 
-const TaskMessagesDialog = ({ task, setTask, open, setOpen, project, setProject }) => {
+const TaskMessagesDialog = ({ task, setTask, open, setOpen, project = null, setProject = null, setTasks = null }) => {
   const theme = useTheme();
   const { isLoading, sendRequest } = useHttp();
+  const userRoles = useSelector((state) => state.roles);
+
+  const isWebsiteChecker = useMemo(() => {
+    for (const r of userRoles) {
+      if (r.name === "Website Checker") return true;
+    }
+    return false;
+  }, [userRoles]);
 
   const saveMessageHandler = async (message, image) => {
+    //TODO: proveri da ne bude prazna poruka
     if (!message) return;
 
     let newMessage = null;
@@ -37,26 +47,48 @@ const TaskMessagesDialog = ({ task, setTask, open, setOpen, project, setProject 
       },
     );
 
-    // Refresh project details, if message saved successfully
     if (!isLoading && newMessage) {
-      await sendRequest(
-        {
-          url: `/projects/${project._id}`,
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
+      // Refresh project details if user is from sales, if message saved successfully
+      if (setProject) {
+        await sendRequest(
+          {
+            url: `/projects/${project._id}`,
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
           },
-        },
-        (projectData) => {
-          console.log("project:", projectData);
-          setProject(projectData);
-          setTask((prevVal) => {
-            const newVal = { ...prevVal };
-            newVal.messages = [...prevVal.messages, newMessage];
-            return newVal;
-          });
-        },
-      );
+          (projectData) => {
+            console.log("project:", projectData);
+            setProject(projectData);
+            setTask((prevVal) => {
+              const newVal = { ...prevVal };
+              newVal.messages = [...prevVal.messages, newMessage];
+              return newVal;
+            });
+          },
+        );
+        // Refresh tasks data if user is website checker
+      } else if (setTasks) {
+        await sendRequest(
+          {
+            url: "/postTasks",
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          },
+          (tasksData) => {
+            console.log("tasks:", tasksData);
+            setTasks(tasksData);
+            for (const t of tasksData) {
+              if (t._id === task._id) {
+                setTask(t);
+              }
+            }
+          },
+        );
+      }
     }
   };
 
@@ -96,6 +128,46 @@ const TaskMessagesDialog = ({ task, setTask, open, setOpen, project, setProject 
               <Typography variant="h2">{task.post.title}</Typography>
             </Box>
 
+            {/* Client Website  */}
+            {isWebsiteChecker && (
+              <Box display="flex" flexDirection="column" gap="1rem">
+                <Typography fontSize="18px" color={theme.palette.grey[500]}>
+                  Client Website:
+                </Typography>
+                <Box display="flex" gap="3rem" alignItems="center">
+                  <Typography variant="h3">{task.post.clientLink.clientWebsite.url}</Typography>
+                  <FormControl
+                    variant="standard"
+                    sx={{
+                      "& .MuiFormControl-root": {
+                        width: "100%",
+                      },
+                    }}>
+                    <Select
+                      value={task.post.clientLink.clientWebsite.status}
+                      onChange={(event) => {}}
+                      sx={{
+                        fontSize: "16px",
+                        "::before": {
+                          borderBottom: `1px solid ${theme.palette.grey[200]}`,
+                        },
+                        color: theme.palette.grey[500],
+                        "& .MuiSvgIcon-root": {
+                          color: theme.palette.grey[200],
+                        },
+                      }}>
+                      <MenuItem value="Neproveren">Neproveren</MenuItem>
+                      <MenuItem value="Odobren">Odobren</MenuItem>
+                      <MenuItem value="Semafor">Semafor</MenuItem>
+                      <MenuItem value="Pijaca">Pijaca</MenuItem>
+                      <MenuItem value="Odbijen">Odbijen</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Box>
+                <Divider sx={{ borderColor: theme.palette.grey[700], mt: "1rem", mb: "1rem" }} />
+              </Box>
+            )}
+
             {/* Messages */}
             <Box backgroundColor={theme.palette.background.light} borderRadius="5px" padding="1rem" mb="2rem">
               {task.messages.length > 0 ? (
@@ -103,7 +175,9 @@ const TaskMessagesDialog = ({ task, setTask, open, setOpen, project, setProject 
                   return <TaskMessageSingle key={m._id} message={m} />;
                 })
               ) : (
-                <Typography variant="h4" textAlign='center'>No Messages</Typography>
+                <Typography variant="h4" textAlign="center">
+                  No Messages
+                </Typography>
               )}
             </Box>
 
