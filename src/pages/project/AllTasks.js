@@ -5,6 +5,7 @@ import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
 import TableHeader from "../../components/TableHeader";
+import TaskMessagesDialog from "../../components/dialogs/TaskMessagesDialog";
 import useHttp from "../../hooks/use-http";
 
 const serverAddress = process.env.ENVIRONMENT === "production" ? process.env.REACT_APP_PROD_BASE_URL : process.env.REACT_APP_DEV_BASE_URL;
@@ -16,6 +17,8 @@ const AllTasks = () => {
   const [tasks, setTasks] = useState([]);
   const [search, setSearch] = useState("");
   const userId = useSelector((state) => state.userId);
+  const [selectedTask, setSelectedTask] = useState(null);
+  const [openSelectedTaskDialog, setOpenSelectedTaskDialog] = useState(null);
 
   useEffect(() => {
     sendRequest(
@@ -53,9 +56,15 @@ const AllTasks = () => {
     );
   };
 
-  // const rowClickHandle = async (params) => {
-  //   navigate(`/tasks/${params.id}`);
-  // };
+  const rowClickHandle = async (params) => {
+    // console.log(params);
+    for (const t of tasks) {
+      if (t._id === params.row._id) {
+        setSelectedTask(t);
+        setOpenSelectedTaskDialog(true);
+      }
+    }
+  };
 
   const columns = [
     {
@@ -189,7 +198,7 @@ const AllTasks = () => {
           getRowId={(row) => row._id}
           rows={tasks || []}
           columns={columns}
-          // onRowClick={rowClickHandle}
+          onRowClick={rowClickHandle}
           initialState={{
             sorting: {
               sortModel: [{ field: "status", sort: "desc" }],
@@ -197,6 +206,7 @@ const AllTasks = () => {
           }}
         />
       </Box>
+      {openSelectedTaskDialog && <TaskMessagesDialog task={selectedTask} setTask={setSelectedTask} open={openSelectedTaskDialog} setOpen={setOpenSelectedTaskDialog} setTasks={setTasks} />}
     </Box>
   );
 };
