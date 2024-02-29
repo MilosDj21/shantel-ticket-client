@@ -1,4 +1,4 @@
-import { Box, useTheme } from "@mui/material";
+import { Box, useTheme, Tooltip } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
@@ -6,6 +6,8 @@ import { useNavigate } from "react-router-dom";
 
 import TableHeader from "../../components/TableHeader";
 import useHttp from "../../hooks/use-http";
+
+const serverAddress = process.env.ENVIRONMENT === "production" ? process.env.REACT_APP_PROD_BASE_URL : process.env.REACT_APP_DEV_BASE_URL;
 
 const AllTasks = () => {
   const theme = useTheme();
@@ -84,6 +86,34 @@ const AllTasks = () => {
           }
         }
         return null;
+      },
+    },
+    {
+      field: "user",
+      headerName: "User",
+      flex: 0.2,
+      valueGetter: (params) => {
+        try {
+          return params.row.post.project.user;
+        } catch (error) {
+          return null;
+        }
+      },
+      renderCell: (params) => {
+        return (
+          <Tooltip title={params.value.firstName} placement="top" arrow>
+            <Box
+              component="img"
+              alt="profile"
+              src={serverAddress + "/" + params.value.profileImage}
+              crossOrigin="use-credentials"
+              height="32px"
+              width="32px"
+              borderRadius="50%"
+              sx={{ objectFit: "cover" }}
+            />
+          </Tooltip>
+        );
       },
     },
     {
