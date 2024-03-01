@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { Box, Typography, Dialog, DialogContent, useTheme, Slide, FormControl, Select, MenuItem, Divider } from "@mui/material";
+import { Box, Typography, Dialog, DialogContent, useTheme, Slide, Button, FormControl, Select, MenuItem, Divider } from "@mui/material";
 import TaskMessageSingle from "../TaskMessageSingle";
 
 import TextEditor from "../TextEditor";
@@ -22,9 +22,53 @@ const TaskMessagesDialog = ({ task, setTask, open, setOpen, project = null, setP
     return false;
   }, [userRoles]);
 
+  const updateClienWebsiteStatusHandler = async (status) => {
+    // console.log(status);
+    let clientWebsite = null;
+
+    // Change client website status
+    await sendRequest(
+      {
+        url: `/clientWebsites/${task.post.clientLink.clientWebsite._id}`,
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: {
+          status,
+        },
+      },
+      (clientWebsiteData) => {
+        console.log("clientWebsite:", clientWebsiteData);
+        clientWebsite = clientWebsiteData;
+      },
+    );
+
+    //Refresh tasks data if client website is updated
+    if (clientWebsite && !isLoading) {
+      await sendRequest(
+        {
+          url: "/postTasks",
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        },
+        (tasksData) => {
+          console.log("tasks:", tasksData);
+          setTasks(tasksData);
+          for (const t of tasksData) {
+            if (t._id === task._id) {
+              setTask(t);
+            }
+          }
+        },
+      );
+    }
+  };
+
   const saveMessageHandler = async (message, image) => {
-    //TODO: proveri da ne bude prazna poruka
-    if (!message) return;
+    if (!message || message === "<p></p>") return;
 
     let newMessage = null;
 
@@ -134,35 +178,49 @@ const TaskMessagesDialog = ({ task, setTask, open, setOpen, project = null, setP
                 <Typography fontSize="18px" color={theme.palette.grey[500]}>
                   Client Website:
                 </Typography>
-                <Box display="flex" gap="3rem" alignItems="center">
-                  <Typography variant="h3">{task.post.clientLink.clientWebsite.url}</Typography>
-                  <FormControl
-                    variant="standard"
-                    sx={{
-                      "& .MuiFormControl-root": {
-                        width: "100%",
-                      },
-                    }}>
-                    <Select
-                      value={task.post.clientLink.clientWebsite.status}
-                      onChange={(event) => {}}
+                <Box display="flex" justifyContent="space-between">
+                  <Box display="flex" gap="3rem" alignItems="center">
+                    <Typography variant="h3">{task.post.clientLink.clientWebsite.url}</Typography>
+                    <FormControl
+                      variant="standard"
                       sx={{
-                        fontSize: "16px",
-                        "::before": {
-                          borderBottom: `1px solid ${theme.palette.grey[200]}`,
-                        },
-                        color: theme.palette.grey[500],
-                        "& .MuiSvgIcon-root": {
-                          color: theme.palette.grey[200],
+                        "& .MuiFormControl-root": {
+                          width: "100%",
                         },
                       }}>
-                      <MenuItem value="Neproveren">Neproveren</MenuItem>
-                      <MenuItem value="Odobren">Odobren</MenuItem>
-                      <MenuItem value="Semafor">Semafor</MenuItem>
-                      <MenuItem value="Pijaca">Pijaca</MenuItem>
-                      <MenuItem value="Odbijen">Odbijen</MenuItem>
-                    </Select>
-                  </FormControl>
+                      <Select
+                        value={task.post.clientLink.clientWebsite.status}
+                        onChange={(event) => updateClienWebsiteStatusHandler(event.target.value)}
+                        sx={{
+                          fontSize: "16px",
+                          "::before": {
+                            borderBottom: `1px solid ${theme.palette.grey[200]}`,
+                          },
+                          color: theme.palette.grey[500],
+                          "& .MuiSvgIcon-root": {
+                            color: theme.palette.grey[200],
+                          },
+                        }}>
+                        <MenuItem value="Neproveren">Neproveren</MenuItem>
+                        <MenuItem value="Odobren">Odobren</MenuItem>
+                        <MenuItem value="Semafor">Semafor</MenuItem>
+                        <MenuItem value="Pijaca">Pijaca</MenuItem>
+                        <MenuItem value="Odbijen">Odbijen</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Box>
+                  <Box>
+                    <Button
+                      variant="outlined"
+                      disabled={isLoading || task.status === "Closed"}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        console.log("close task");
+                        // tableButtonClickHandle(params.row);
+                      }}>
+                      {task.status === "Closed" ? "Disabled" : "Close Task"}
+                    </Button>
+                  </Box>
                 </Box>
                 <Divider sx={{ borderColor: theme.palette.grey[700], mt: "1rem", mb: "1rem" }} />
               </Box>
