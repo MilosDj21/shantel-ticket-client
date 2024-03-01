@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React from "react";
 import { Box, Typography, Dialog, DialogContent, useTheme, Slide, Button, FormControl, Select, MenuItem, Divider } from "@mui/material";
 import TaskMessageSingle from "../TaskMessageSingle";
 
@@ -135,6 +135,47 @@ const TaskMessagesDialog = ({ task, setTask, open, setOpen, project = null, setP
       }
     }
   };
+  const closeTaskHandler = async () => {
+    if (task.post.clientLink.clientWebsite.status === "Neproveren") return;
+    if (!isLoading) {
+      //Close Task
+      await sendRequest(
+        {
+          url: `/postTasks/${task._id}`,
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: {
+            status: "Closed",
+          },
+        },
+        (taskData) => {
+          console.log("tasks:", taskData);
+        },
+      );
+
+      //Refresh tasks data
+      await sendRequest(
+        {
+          url: "/postTasks",
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        },
+        (tasksData) => {
+          console.log("tasks:", tasksData);
+          setTasks(tasksData);
+          for (const t of tasksData) {
+            if (t._id === task._id) {
+              setTask(t);
+            }
+          }
+        },
+      );
+    }
+  };
 
   return (
     <Box>
@@ -215,8 +256,7 @@ const TaskMessagesDialog = ({ task, setTask, open, setOpen, project = null, setP
                       disabled={isLoading || task.status === "Closed"}
                       onClick={(e) => {
                         e.stopPropagation();
-                        console.log("close task");
-                        // tableButtonClickHandle(params.row);
+                        closeTaskHandler();
                       }}>
                       {task.status === "Closed" ? "Disabled" : "Close Task"}
                     </Button>
