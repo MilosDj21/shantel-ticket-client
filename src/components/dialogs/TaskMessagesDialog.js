@@ -15,12 +15,46 @@ const TaskMessagesDialog = ({ task, setTask, open, setOpen, project = null, setP
   const { isLoading, sendRequest } = useHttp();
   const userRoles = useSelector((state) => state.roles);
 
-  const isWebsiteChecker = useMemo(() => {
-    for (const r of userRoles) {
-      if (r.name === "Website Checker") return true;
+  const setTaskInProgressAndRefresh = async () => {
+    //If task status is not already in progress, then update it
+    if (task.status !== "In Progress" && !isLoading) {
+      await sendRequest(
+        {
+          url: `/postTasks/${task._id}`,
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: {
+            status: "In Progress",
+          },
+        },
+        (taskData) => {
+          console.log("tasks:", taskData);
+        },
+      );
     }
-    return false;
-  }, [userRoles]);
+
+    //Refresh tasks data
+    await sendRequest(
+      {
+        url: "/postTasks",
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      },
+      (tasksData) => {
+        console.log("tasks:", tasksData);
+        setTasks(tasksData);
+        for (const t of tasksData) {
+          if (t._id === task._id) {
+            setTask(t);
+          }
+        }
+      },
+    );
+  };
 
   const updateClienWebsiteStatusHandler = async (status) => {
     // console.log(status);
@@ -44,26 +78,9 @@ const TaskMessagesDialog = ({ task, setTask, open, setOpen, project = null, setP
       },
     );
 
-    //Refresh tasks data if client website is updated
+    //Update task to be in progress and refresh tasks data if client website is updated
     if (clientWebsite && !isLoading) {
-      await sendRequest(
-        {
-          url: "/postTasks",
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        },
-        (tasksData) => {
-          console.log("tasks:", tasksData);
-          setTasks(tasksData);
-          for (const t of tasksData) {
-            if (t._id === task._id) {
-              setTask(t);
-            }
-          }
-        },
-      );
+      await setTaskInProgressAndRefresh();
     }
   };
 
@@ -93,7 +110,7 @@ const TaskMessagesDialog = ({ task, setTask, open, setOpen, project = null, setP
 
     if (!isLoading && newMessage) {
       // Refresh project details if user is from sales, if message saved successfully
-      if (setProject) {
+      if (userRoles[0].name === "Sales") {
         await sendRequest(
           {
             url: `/projects/${project._id}`,
@@ -113,25 +130,8 @@ const TaskMessagesDialog = ({ task, setTask, open, setOpen, project = null, setP
           },
         );
         // Refresh tasks data if user is website checker
-      } else if (setTasks) {
-        await sendRequest(
-          {
-            url: "/postTasks",
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-            },
-          },
-          (tasksData) => {
-            console.log("tasks:", tasksData);
-            setTasks(tasksData);
-            for (const t of tasksData) {
-              if (t._id === task._id) {
-                setTask(t);
-              }
-            }
-          },
-        );
+      } else if (userRoles[0].name === "Website Checker") {
+        await setTaskInProgressAndRefresh();
       }
     }
   };
@@ -172,8 +172,8 @@ const TaskMessagesDialog = ({ task, setTask, open, setOpen, project = null, setP
               <Typography variant="h2">{task.post.title}</Typography>
             </Box>
 
-            {/* Client Website  */}
-            {isWebsiteChecker && (
+            {/* Client Website, show only for website checker role  */}
+            {userRoles[0].name === "Website Checker" && (
               <Box display="flex" flexDirection="column" gap="1rem">
                 <Typography fontSize="18px" color={theme.palette.grey[500]}>
                   Client Website:
