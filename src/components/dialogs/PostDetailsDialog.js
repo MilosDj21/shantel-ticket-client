@@ -89,7 +89,7 @@ const PostDetailsDialog = ({ post, setPost, open, setOpen, project, setProject }
 
   // Filter client link list to show only links for that website
   useEffect(() => {
-    if (clientWebsite) {
+    if (clientWebsite && clientLinkList) {
       setClientFilteredLinkList(() => {
         const tempList = clientLinkList.filter((l) => {
           return l.url.includes(clientWebsite.url);
@@ -115,7 +115,7 @@ const PostDetailsDialog = ({ post, setPost, open, setOpen, project, setProject }
       (userData) => {
         setUsers(userData);
         console.log("users:", userData);
-      }
+      },
     );
     getWebsitesSendRequest(
       {
@@ -128,7 +128,7 @@ const PostDetailsDialog = ({ post, setPost, open, setOpen, project, setProject }
       (websiteData) => {
         console.log("websites:", websiteData);
         setWebsiteList(websiteData);
-      }
+      },
     );
     getClientWebsitesSendRequest(
       {
@@ -141,7 +141,7 @@ const PostDetailsDialog = ({ post, setPost, open, setOpen, project, setProject }
       (clientWebsitesData) => {
         console.log("clientWebsites", clientWebsitesData);
         setClientWebsiteList(clientWebsitesData);
-      }
+      },
     );
     getClientLinksSendRequest(
       {
@@ -154,7 +154,7 @@ const PostDetailsDialog = ({ post, setPost, open, setOpen, project, setProject }
       (clientLinkData) => {
         console.log("clientLinks", clientLinkData);
         setClientLinkList(clientLinkData);
-      }
+      },
     );
   }, [sendRequest, getWebsitesSendRequest, getClientWebsitesSendRequest, getClientLinksSendRequest]);
 
@@ -199,7 +199,7 @@ const PostDetailsDialog = ({ post, setPost, open, setOpen, project, setProject }
       },
       (postData) => {
         console.log("post:", postData);
-      }
+      },
     );
     // Refresh project details
     await sendRequest(
@@ -219,7 +219,7 @@ const PostDetailsDialog = ({ post, setPost, open, setOpen, project, setProject }
             break;
           }
         }
-      }
+      },
     );
     return false;
   };
@@ -250,7 +250,7 @@ const PostDetailsDialog = ({ post, setPost, open, setOpen, project, setProject }
           requestOkStatus = true;
           setPost(postData);
           setUserMenuAnchorEl(null);
-        }
+        },
       );
     }
     // Update assigned user in task
@@ -282,7 +282,7 @@ const PostDetailsDialog = ({ post, setPost, open, setOpen, project, setProject }
           (taskData) => {
             console.log("task:", taskData);
             requestOkStatus = true;
-          }
+          },
         );
       }
     }
@@ -307,7 +307,7 @@ const PostDetailsDialog = ({ post, setPost, open, setOpen, project, setProject }
               break;
             }
           }
-        }
+        },
       );
     }
   };
@@ -362,8 +362,7 @@ const PostDetailsDialog = ({ post, setPost, open, setOpen, project, setProject }
               maxHeight: "100%",
               m: "0",
             },
-          }}
-        >
+          }}>
           <DialogContent
             sx={{
               backgroundColor: theme.palette.background.default,
@@ -371,8 +370,7 @@ const PostDetailsDialog = ({ post, setPost, open, setOpen, project, setProject }
               justifyContent: "start",
               flexDirection: "column",
               pt: "0",
-            }}
-          >
+            }}>
             {/* Title */}
             <Box display="flex" justifyContent="center" p="3rem 0">
               <Typography variant="h2">{post.title}</Typography>
@@ -414,8 +412,7 @@ const PostDetailsDialog = ({ post, setPost, open, setOpen, project, setProject }
                     <IconButton
                       onClick={() => {
                         setOpenWebsiteDialog(true);
-                      }}
-                    >
+                      }}>
                       <Add
                         sx={{
                           color: theme.palette.grey.main,
@@ -478,8 +475,7 @@ const PostDetailsDialog = ({ post, setPost, open, setOpen, project, setProject }
                       <IconButton
                         onClick={() => {
                           setOpenClientWebsiteDialog(true);
-                        }}
-                      >
+                        }}>
                         <Add
                           sx={{
                             color: theme.palette.grey.main,
@@ -541,8 +537,7 @@ const PostDetailsDialog = ({ post, setPost, open, setOpen, project, setProject }
                       <IconButton
                         onClick={() => {
                           setOpenClientLinkDialog(true);
-                        }}
-                      >
+                        }}>
                         <Add
                           sx={{
                             color: theme.palette.grey.main,
@@ -571,8 +566,7 @@ const PostDetailsDialog = ({ post, setPost, open, setOpen, project, setProject }
                     "& .MuiFormControl-root": {
                       width: "100%",
                     },
-                  }}
-                >
+                  }}>
                   <Select
                     value={post.postCategory}
                     onChange={(event) => updatePostHandler(event.target.value, "postCategory")}
@@ -584,8 +578,7 @@ const PostDetailsDialog = ({ post, setPost, open, setOpen, project, setProject }
                       "& .MuiSvgIcon-root": {
                         color: theme.palette.grey[200],
                       },
-                    }}
-                  >
+                    }}>
                     <MenuItem value="Placeni">Placeni</MenuItem>
                     <MenuItem value="Insercija">Insercija</MenuItem>
                     <MenuItem value="Wayback">Wayback</MenuItem>
@@ -625,8 +618,7 @@ const PostDetailsDialog = ({ post, setPost, open, setOpen, project, setProject }
                     onClick={(event) => {
                       setSelectedUserRole("copywriter");
                       openUserMenuHandler(event);
-                    }}
-                  >
+                    }}>
                     {post.copywriter && (
                       <Box
                         component="img"
@@ -650,8 +642,7 @@ const PostDetailsDialog = ({ post, setPost, open, setOpen, project, setProject }
                     onClick={(event) => {
                       setSelectedUserRole("editor");
                       openUserMenuHandler(event);
-                    }}
-                  >
+                    }}>
                     {post.editor && (
                       <Box
                         component="img"
@@ -676,8 +667,7 @@ const PostDetailsDialog = ({ post, setPost, open, setOpen, project, setProject }
                             key={u._id}
                             onClick={() => {
                               setUserMenuItemHandler(u);
-                            }}
-                          >
+                            }}>
                             <Typography mr="0.4rem">{u.firstName}</Typography>
                             <Typography>{u.lastName}</Typography>
                           </MenuItem>
@@ -688,8 +678,7 @@ const PostDetailsDialog = ({ post, setPost, open, setOpen, project, setProject }
                             key={u._id}
                             onClick={() => {
                               setUserMenuItemHandler(u);
-                            }}
-                          >
+                            }}>
                             <Typography mr="0.4rem">{u.firstName}</Typography>
                             <Typography>{u.lastName}</Typography>
                           </MenuItem>
