@@ -15,7 +15,7 @@ const NewTicket = () => {
   const { isLoading, sendRequest } = useHttp();
   const { sendRequest: messageSendRequest } = useHttp();
   const { sendRequest: updateTicketSendRequest } = useHttp();
-  const userId = useSelector((state) => state.userId);
+  const userId = useSelector((state) => state.auth.userId);
   const isNonMobile = useMediaQuery("(min-width: 600px)");
 
   const saveTicketHandler = async (message, image) => {
@@ -62,9 +62,9 @@ const NewTicket = () => {
               },
             });
             navigate("/tickets/");
-          }
+          },
         );
-      }
+      },
     );
   };
 
@@ -101,8 +101,7 @@ const NewTicket = () => {
               color: theme.palette.grey[500],
               p: "0.2rem 0",
               fontSize: "18px",
-            }}
-          >
+            }}>
             Category:
           </Typography>
           <FormControl
@@ -111,8 +110,7 @@ const NewTicket = () => {
               "& .MuiFormControl-root": {
                 width: "100%",
               },
-            }}
-          >
+            }}>
             <Select
               value={category}
               onChange={(event) => setCategory(event.target.value)}
@@ -124,8 +122,7 @@ const NewTicket = () => {
                 "& .MuiSvgIcon-root": {
                   color: theme.palette.grey[200],
                 },
-              }}
-            >
+              }}>
               <MenuItem value="Login">Login</MenuItem>
               <MenuItem value="Indeksiranje">Indeksiranje</MenuItem>
               <MenuItem value="Nesto ne radi">Nesto ne radi</MenuItem>

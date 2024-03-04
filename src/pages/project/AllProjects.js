@@ -13,7 +13,7 @@ const AllProjects = () => {
   const [data, setData] = useState([]);
   const { isLoading, sendRequest } = useHttp();
   const [search, setSearch] = useState("");
-  const userId = useSelector((state) => state.userId);
+  const userId = useSelector((state) => state.auth.userId);
 
   useEffect(() => {
     sendRequest(
@@ -27,7 +27,7 @@ const AllProjects = () => {
       (projectsData) => {
         console.log(projectsData);
         setData(projectsData);
-      }
+      },
     );
   }, [sendRequest, userId]);
 
@@ -47,7 +47,7 @@ const AllProjects = () => {
       },
       (projectsData) => {
         setData(projectsData);
-      }
+      },
     );
   };
 
@@ -133,8 +133,7 @@ const AllProjects = () => {
           "& .closed-project": {
             backgroundColor: "#913232",
           },
-        }}
-      >
+        }}>
         <DataGrid
           loading={isLoading || !data}
           getRowId={(row) => row._id}

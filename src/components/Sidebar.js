@@ -10,7 +10,7 @@ import ShantelLogo from "../assets/ShantelLogo.png";
 
 const Sidebar = ({ drawerWidth, isSidebarOpen, setIsSidebarOpen, isNonMobile }) => {
   const theme = useTheme();
-  const userRoles = useSelector((state) => state.roles);
+  const userRoles = useSelector((state) => state.auth.roles);
   const { pathname } = useLocation();
   const getSidebarItems = useSidebarItems();
   const navigate = useNavigate();
@@ -49,8 +49,7 @@ const Sidebar = ({ drawerWidth, isSidebarOpen, setIsSidebarOpen, isNonMobile }) 
             "& .css-1jz4rhn-MuiTypography-root": {
               margin: "1.5rem 0 0.5rem 3rem",
             },
-          }}
-        >
+          }}>
           <Box width="100%">
             <Box m="1.5rem 2rem 2rem 3rem">
               <FlexBetween color={theme.palette.grey[300]}>
@@ -91,8 +90,7 @@ const Sidebar = ({ drawerWidth, isSidebarOpen, setIsSidebarOpen, isNonMobile }) 
                       "& .MuiListItemButton-root": {
                         padding: "4px 16px 4px 16px",
                       },
-                    }}
-                  >
+                    }}>
                     <ListItemButton
                       onClick={() => {
                         navigate("/" + link);
@@ -103,14 +101,12 @@ const Sidebar = ({ drawerWidth, isSidebarOpen, setIsSidebarOpen, isNonMobile }) 
                         color: active === link ? theme.palette.primary[900] : theme.palette.grey[300],
                         ":hover": { color: theme.palette.primary.main, "& .MuiSvgIcon-root": { color: theme.palette.primary.main } },
                         "& .MuiListItemIcon-root": { minWidth: "30px" },
-                      }}
-                    >
+                      }}>
                       <ListItemIcon
                         sx={{
                           ml: "2rem",
                           color: active === link ? theme.palette.primary[900] : theme.palette.grey[300],
-                        }}
-                      >
+                        }}>
                         {icon}
                       </ListItemIcon>
                       <ListItemText primary={text} />

@@ -17,7 +17,7 @@ const TicketDetails = () => {
   const theme = useTheme();
   const isNonMobile = useMediaQuery("(min-width: 600px)");
   const navigate = useNavigate();
-  const userId = useSelector((state) => state.userId);
+  const userId = useSelector((state) => state.auth.userId);
   const { ticketId } = useParams();
   const { isLoading, sendRequest } = useHttp();
   const { sendRequest: changeTicketStatus } = useHttp();
@@ -87,12 +87,12 @@ const TicketDetails = () => {
                   setTicketLogs((prevVal) => {
                     return [...prevVal, logData];
                   });
-                }
+                },
               );
-            }
+            },
           );
         }
-      }
+      },
     );
   }, [sendRequest, ticketId, updateTicketSeenByAdmin, userId]);
 
@@ -128,9 +128,9 @@ const TicketDetails = () => {
             setTicketLogs((prevVal) => {
               return [...prevVal, logData];
             });
-          }
+          },
         );
-      }
+      },
     );
   };
 
@@ -146,7 +146,7 @@ const TicketDetails = () => {
       },
       (ticketData) => {
         navigate("/admin/tickets/");
-      }
+      },
     );
   };
 
@@ -205,9 +205,9 @@ const TicketDetails = () => {
             setTicketStatus(ticketData.status);
             setTicketLogs(ticketData.logs);
             console.log(ticketData);
-          }
+          },
         );
-      }
+      },
     );
   };
 
@@ -302,8 +302,7 @@ const TicketDetails = () => {
                         "& .MuiSvgIcon-root": {
                           color: theme.palette.grey[200],
                         },
-                      }}
-                    >
+                      }}>
                       <MenuItem value="New">New</MenuItem>
                       <MenuItem value="In Progress">In Progress</MenuItem>
                       <MenuItem value="Closed">Closed</MenuItem>
@@ -315,8 +314,7 @@ const TicketDetails = () => {
                     <IconButton
                       onClick={() => {
                         navigate(`/admin/tickets/edit/${ticketId}`);
-                      }}
-                    >
+                      }}>
                       <SettingsOutlined
                         sx={{
                           color: theme.palette.grey.main,
@@ -328,8 +326,7 @@ const TicketDetails = () => {
                     <IconButton
                       onClick={() => {
                         setOpenDialog(true);
-                      }}
-                    >
+                      }}>
                       <Delete
                         sx={{
                           color: theme.palette.grey.main,
@@ -348,8 +345,7 @@ const TicketDetails = () => {
               borderRadius="5px"
               sx={{
                 wordWrap: "anywhere",
-              }}
-            >
+              }}>
               <Typography variant="h3" mb="2rem">
                 Ticket History
               </Typography>

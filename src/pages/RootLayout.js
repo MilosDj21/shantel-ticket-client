@@ -9,7 +9,7 @@ import Sidebar from "../components/Sidebar";
 const RootLayout = () => {
   const isNonMobile = useMediaQuery("(min-width: 600px)");
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const userId = useSelector((state) => state.userId);
+  const userId = useSelector((state) => state.auth.userId);
   const navigate = useNavigate();
 
   useEffect(() => {

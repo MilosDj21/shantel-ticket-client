@@ -15,7 +15,7 @@ const AllTickets = () => {
   const [data, setData] = useState([]);
   const { isLoading, sendRequest } = useHttp();
   const [search, setSearch] = useState("");
-  const userId = useSelector((state) => state.userId);
+  const userId = useSelector((state) => state.auth.userId);
 
   useEffect(() => {
     sendRequest(
@@ -28,7 +28,7 @@ const AllTickets = () => {
       },
       (ticketsData) => {
         setData(ticketsData);
-      }
+      },
     );
   }, [sendRequest, userId]);
 
@@ -50,7 +50,7 @@ const AllTickets = () => {
             "Content-Type": "application/json",
           },
         },
-        getTickets
+        getTickets,
       );
     } else {
       sendRequest(
@@ -61,7 +61,7 @@ const AllTickets = () => {
             "Content-Type": "application/json",
           },
         },
-        getTickets
+        getTickets,
       );
     }
   };
@@ -194,8 +194,7 @@ const AllTickets = () => {
           "& .closed-ticket": {
             backgroundColor: "#913232",
           },
-        }}
-      >
+        }}>
         <DataGrid
           loading={isLoading || !data}
           getRowId={(row) => row._id}

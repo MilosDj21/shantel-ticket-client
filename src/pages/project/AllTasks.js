@@ -16,7 +16,7 @@ const AllTasks = () => {
   const { isLoading, sendRequest } = useHttp();
   const [tasks, setTasks] = useState([]);
   const [search, setSearch] = useState("");
-  const userId = useSelector((state) => state.userId);
+  const userId = useSelector((state) => state.auth.userId);
   const [selectedTask, setSelectedTask] = useState(null);
   const [openSelectedTaskDialog, setOpenSelectedTaskDialog] = useState(null);
 

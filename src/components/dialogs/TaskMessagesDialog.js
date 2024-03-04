@@ -13,7 +13,7 @@ const Transition = React.forwardRef(function Transition(props, ref) {
 const TaskMessagesDialog = ({ task, setTask, open, setOpen, project = null, setProject = null, setTasks = null }) => {
   const theme = useTheme();
   const { isLoading, sendRequest } = useHttp();
-  const userRoles = useSelector((state) => state.roles);
+  const userRoles = useSelector((state) => state.auth.roles);
 
   const setTaskInProgressAndRefresh = async () => {
     //If task status is not already in progress, then update it

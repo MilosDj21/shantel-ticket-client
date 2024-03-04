@@ -12,7 +12,7 @@ const serverAddress = process.env.ENVIRONMENT === "production" ? process.env.REA
 const AllTickets = () => {
   const theme = useTheme();
   const navigate = useNavigate();
-  const userEmail = useSelector((state) => state.email);
+  const userEmail = useSelector((state) => state.auth.email);
   const [data, setData] = useState([]);
   const { isLoading, sendRequest } = useHttp();
   const [search, setSearch] = useState("");
@@ -32,7 +32,7 @@ const AllTickets = () => {
           },
           (ticketsData) => {
             setData(ticketsData);
-          }
+          },
         );
       }, 60000);
     } else {
@@ -46,7 +46,7 @@ const AllTickets = () => {
         },
         (ticketsData) => {
           setData(ticketsData);
-        }
+        },
       );
     }
     return () => {
@@ -72,7 +72,7 @@ const AllTickets = () => {
             "Content-Type": "application/json",
           },
         },
-        getTickets
+        getTickets,
       );
     } else {
       sendRequest(
@@ -83,7 +83,7 @@ const AllTickets = () => {
             "Content-Type": "application/json",
           },
         },
-        getTickets
+        getTickets,
       );
     }
   };
@@ -220,8 +220,7 @@ const AllTickets = () => {
           "& .closed-ticket": {
             backgroundColor: "#913232",
           },
-        }}
-      >
+        }}>
         <DataGrid
           loading={isLoading || !data}
           getRowId={(row) => row._id}

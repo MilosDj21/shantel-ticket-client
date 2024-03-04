@@ -15,7 +15,7 @@ const serverAddress = process.env.ENVIRONMENT === "production" ? process.env.REA
 const TicketDetails = () => {
   const theme = useTheme();
   const isNonMobile = useMediaQuery("(min-width: 600px)");
-  const userId = useSelector((state) => state.userId);
+  const userId = useSelector((state) => state.auth.userId);
   const { ticketId } = useParams();
   const { isLoading, sendRequest } = useHttp();
   const { isLoading: messageIsLoading, sendRequest: messageSendRequest } = useHttp();
@@ -46,7 +46,7 @@ const TicketDetails = () => {
       (ticketData) => {
         setData(ticketData);
         console.log(ticketData);
-      }
+      },
     );
   }, [sendRequest, ticketId, userId]);
 
@@ -103,9 +103,9 @@ const TicketDetails = () => {
           (ticketData) => {
             setData(ticketData);
             console.log(ticketData);
-          }
+          },
         );
-      }
+      },
     );
   };
   return (

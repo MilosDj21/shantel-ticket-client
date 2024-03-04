@@ -4,7 +4,7 @@ import useHttp from "../hooks/use-http";
 import { Outlet, Navigate } from "react-router-dom";
 
 const ProtectedRoutes = () => {
-  const userRoles = useSelector((state) => state.roles);
+  const userRoles = useSelector((state) => state.auth.roles);
   const { sendRequest } = useHttp();
   const [isLoading, setIsLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);

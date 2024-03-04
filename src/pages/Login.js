@@ -15,7 +15,7 @@ const Login = () => {
   const [twoFaToken, setTwoFaToken] = useState("");
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const userId = useSelector((state) => state.userId);
+  const userId = useSelector((state) => state.auth.userId);
   const { sendRequest } = useHttp();
 
   useEffect(() => {
@@ -43,7 +43,7 @@ const Login = () => {
         },
         body: { email, password, twoFaToken },
       },
-      saveUser
+      saveUser,
     );
   };
 
@@ -129,8 +129,7 @@ const Login = () => {
               sx={{
                 p: "0.4rem 3.5rem",
                 fontSize: "16px",
-              }}
-            >
+              }}>
               Login
             </Button>
           </Box>
