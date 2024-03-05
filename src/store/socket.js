@@ -14,7 +14,7 @@ const socketSlice = createSlice({
       state.isConnected = true;
     },
     addNotification(state, action) {
-      let newList = [action.payload.notification, ...state.notificationList];
+      let newList = [action.payload, ...state.notificationList];
       if (state.notificationList.length > 10) {
         newList.pop();
       }
