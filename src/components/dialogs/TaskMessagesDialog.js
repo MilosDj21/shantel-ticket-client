@@ -1,10 +1,11 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Box, Typography, Dialog, DialogContent, useTheme, Slide, Button, FormControl, Select, MenuItem, Divider } from "@mui/material";
 import TaskMessageSingle from "../TaskMessageSingle";
 
 import TextEditor from "../TextEditor";
 import useHttp from "../../hooks/use-http";
 import { useSelector } from "react-redux";
+import { socket } from "../../socket";
 
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="left" ref={ref} {...props} />;
@@ -13,7 +14,23 @@ const Transition = React.forwardRef(function Transition(props, ref) {
 const TaskMessagesDialog = ({ task, setTask, open, setOpen, project = null, setProject = null, setTasks = null }) => {
   const theme = useTheme();
   const { isLoading, sendRequest } = useHttp();
-  const userRoles = useSelector((state) => state.auth.roles);
+  const user = useSelector((state) => state.auth);
+
+  useEffect(() => {
+    const onPrivateMessage = (message) => {
+      // console.log("kroz message comp", message);
+      setTask((prevVal) => {
+        const newVal = { ...prevVal };
+        newVal.messages = [...prevVal.messages, message];
+        return newVal;
+      });
+    };
+
+    socket.on("privateMessage", onPrivateMessage);
+    return () => {
+      socket.off("privateMessage", onPrivateMessage);
+    };
+  });
 
   const setTaskInProgressAndRefresh = async () => {
     //If task status is not already in progress, then update it
@@ -85,7 +102,7 @@ const TaskMessagesDialog = ({ task, setTask, open, setOpen, project = null, setP
   };
 
   const saveMessageHandler = async (message, image) => {
-    if (!message || message === "<p></p>") return;
+    if (!message || message === "<p></p>" || !task.assignedUser) return;
 
     let newMessage = null;
 
@@ -105,12 +122,26 @@ const TaskMessagesDialog = ({ task, setTask, open, setOpen, project = null, setP
       },
       (messageData) => {
         newMessage = messageData;
+
+        // Check user to which message needs to be sent
+        let sendMsgTo = null;
+        if (user.roles[0].name === "Sales") {
+          sendMsgTo = task.assignedUser._id;
+        } else {
+          sendMsgTo = task.post.project.user._id;
+        }
+
+        // After saving message successfully emit message to socket io
+        socket.emit("privateMessage", {
+          to: sendMsgTo,
+          data: messageData,
+        });
       },
     );
 
     if (!isLoading && newMessage) {
       // Refresh project details if user is from sales, if message saved successfully
-      if (userRoles[0].name === "Sales") {
+      if (user.roles[0].name === "Sales") {
         await sendRequest(
           {
             url: `/projects/${project._id}`,
@@ -130,11 +161,53 @@ const TaskMessagesDialog = ({ task, setTask, open, setOpen, project = null, setP
           },
         );
         // Refresh tasks data if user is website checker
-      } else if (userRoles[0].name === "Website Checker") {
+      } else if (user.roles[0].name === "Website Checker") {
         await setTaskInProgressAndRefresh();
       }
     }
   };
+
+  const assignUserHandler = async () => {
+    if (!isLoading) {
+      //Assign current user
+      await sendRequest(
+        {
+          url: `/postTasks/${task._id}`,
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: {
+            assignedUser: user.userId,
+          },
+        },
+        (taskData) => {
+          console.log("tasks:", taskData);
+        },
+      );
+
+      //Refresh tasks data
+      await sendRequest(
+        {
+          url: "/postTasks",
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        },
+        (tasksData) => {
+          console.log("tasks:", tasksData);
+          setTasks(tasksData);
+          for (const t of tasksData) {
+            if (t._id === task._id) {
+              setTask(t);
+            }
+          }
+        },
+      );
+    }
+  };
+
   const closeTaskHandler = async () => {
     if (task.post.clientLink.clientWebsite.status === "Neproveren") return;
     if (!isLoading) {
@@ -214,7 +287,7 @@ const TaskMessagesDialog = ({ task, setTask, open, setOpen, project = null, setP
             </Box>
 
             {/* Client Website, show only for website checker role  */}
-            {userRoles[0].name === "Website Checker" && (
+            {user.roles[0].name === "Website Checker" && (
               <Box display="flex" flexDirection="column" gap="1rem">
                 <Typography fontSize="18px" color={theme.palette.grey[500]}>
                   Client Website:
@@ -250,7 +323,16 @@ const TaskMessagesDialog = ({ task, setTask, open, setOpen, project = null, setP
                       </Select>
                     </FormControl>
                   </Box>
-                  <Box>
+                  <Box display="flex" gap="1rem">
+                    <Button
+                      variant="contained"
+                      disabled={isLoading || Boolean(task.assignedUser)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        assignUserHandler();
+                      }}>
+                      {task.status === "Closed" || Boolean(task.assignedUser) ? "Disabled" : "Take Over"}
+                    </Button>
                     <Button
                       variant="outlined"
                       disabled={isLoading || task.status === "Closed"}
