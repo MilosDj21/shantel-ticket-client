@@ -3,6 +3,7 @@ import { Menu as MenuIcon, SettingsOutlined, ArrowDropDownOutlined, Notification
 import { useDispatch, useSelector } from "react-redux";
 import { AppBar, IconButton, Toolbar, useTheme, Button, Menu, MenuItem, Box, Typography, Badge } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import parse from "html-react-parser";
 
 import FlexBetween from "./FlexBetween";
 import useHttp from "../hooks/use-http";
@@ -14,8 +15,9 @@ const Navbar = ({ isSidebarOpen, setIsSidebarOpen }) => {
   const { sendRequest } = useHttp();
   const userFirstName = useSelector((state) => state.auth.firstName);
   const userLastName = useSelector((state) => state.auth.lastName);
-  const unreadNotifications = useSelector((state) => state.socket.unreadNotifications)
   const userProfileImage = useSelector((state) => state.auth.profileImage);
+  const unreadNotifications = useSelector((state) => state.socket.unreadNotifications);
+  const notificationList = useSelector((state) => state.socket.notificationList);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState(null);
@@ -27,8 +29,8 @@ const Navbar = ({ isSidebarOpen, setIsSidebarOpen }) => {
   const handleClick = (event) => setAnchorEl(event.currentTarget);
   const notificationClickHandle = (event) => {
     setNotificationAnchorEl(event.currentTarget);
-    dispatch(socketActions.readAllNotifications())
-  }
+    dispatch(socketActions.readAllNotifications());
+  };
 
   const handleLogout = () => {
     setAnchorEl(null);
@@ -76,6 +78,7 @@ const Navbar = ({ isSidebarOpen, setIsSidebarOpen }) => {
             />
           </IconButton>
 
+          {/*Notification*/}
           <IconButton onClick={notificationClickHandle}>
             <Badge badgeContent={unreadNotifications} color="success">
               <Notifications
@@ -90,21 +93,78 @@ const Navbar = ({ isSidebarOpen, setIsSidebarOpen }) => {
             open={isNotificationOpen}
             onClose={() => setNotificationAnchorEl(null)}
             anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-            // sx={{
-            //   "& .MuiList-root": {
-            //     backgroundColor: "black",
-            //   },
-            // }}
-          >
-            <MenuItem
-            // onClick={handleLogout}
-            // sx={{
-            //   backgroundColor: "black",
-            //   m: "0",
-            // }}
-            >
-              Notification
-            </MenuItem>
+            sx={{
+              "& .MuiList-root": {
+                backgroundColor: theme.palette.background.light,
+                borderRadius: "5px",
+                border: `1px solid ${theme.palette.grey.main}`,
+              },
+            }}>
+            {notificationList.length > 0 ? (
+              notificationList.map((n) => {
+                let notification = parse(n.message);
+                // if parse into array and array not empty
+                if (notification instanceof Array && notification.length > 0) {
+                  //if first <p> of array longer than 35 chars
+                  if (notification[0].props.children.length > 35) {
+                    notification = notification[0].props.children.substring(0, 35) + "...";
+                  } else {
+                    notification = notification[0].props.children + "...";
+                  }
+                }
+                // if parse into object
+                else if (notification instanceof Object) {
+                  //if longer than 35 chars
+                  if (notification.props.children.length > 35) {
+                    notification = notification.props.children.substring(0, 35) + "...";
+                  } else {
+                    notification = notification.props.children;
+                  }
+                }
+                return (
+                  <MenuItem
+                    key={n._id}
+                    // onClick={handleLogout}
+                    sx={{
+                      backgroundColor: theme.palette.background.light,
+                      color: theme.palette.grey.main,
+                      m: "0",
+                      ":hover": {
+                        backgroundColor: theme.palette.background.default,
+                      },
+                      "& p": {
+                        margin: 0,
+                      },
+                    }}>
+                    <Box display="flex" gap="0.5rem">
+                      <Box
+                        component="img"
+                        alt="profile"
+                        src={serverAddress + "/" + n.user.profileImage}
+                        crossOrigin="use-credentials"
+                        height="22px"
+                        width="22px"
+                        borderRadius="50%"
+                        sx={{ objectFit: "cover" }}
+                      />
+                      <Box>{notification}</Box>
+                    </Box>
+                  </MenuItem>
+                );
+              })
+            ) : (
+              <MenuItem
+                sx={{
+                  backgroundColor: theme.palette.background.light,
+                  color: theme.palette.grey.main,
+                  m: "0",
+                  ":hover": {
+                    backgroundColor: theme.palette.background.default,
+                  },
+                }}>
+                No Notifications
+              </MenuItem>
+            )}
           </Menu>
 
           {/* PROFILE */}
