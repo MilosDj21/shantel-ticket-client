@@ -32,7 +32,6 @@ const RootLayout = () => {
     };
 
     const onPrivateMessage = (message) => {
-      console.log("kroz root comp", message);
       dispatch(socketActions.addNotification(message));
       // dispatch(socketActions.addNotification(JSON.parse(message)));
     };
