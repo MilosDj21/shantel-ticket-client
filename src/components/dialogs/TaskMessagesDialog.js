@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { Box, Typography, Dialog, DialogContent, useTheme, Slide, Button, FormControl, Select, MenuItem, Divider } from "@mui/material";
 import TaskMessageSingle from "../TaskMessageSingle";
+import { toast } from "react-toastify";
 
 import TextEditor from "../TextEditor";
 import useHttp from "../../hooks/use-http";
@@ -16,10 +17,46 @@ const TaskMessagesDialog = ({ task, setTask, open, setOpen, project = null, setP
   const { isLoading, sendRequest } = useHttp();
   const user = useSelector((state) => state.auth);
 
+  const errorNotificaion = (message) => {
+    if (!message) {
+      message = "Something went wrong!";
+    }
+    return toast.error(message, {
+      position: "top-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "dark",
+    });
+  };
+
+  useEffect(() => {
+    sendRequest(
+      {
+        url: `/postTasks/${task._id}`,
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      },
+      (taskData) => {
+        console.log("task", taskData);
+        setTask(taskData);
+      },
+    );
+  }, [sendRequest, task._id, setTask]);
+
   useEffect(() => {
     const onPrivateMessage = (message) => {
-      // console.log("kroz message comp", message);
       setTask((prevVal) => {
+        for (const m of prevVal.messages) {
+          if (m._id === message._id) {
+            return prevVal;
+          }
+        }
         const newVal = { ...prevVal };
         newVal.messages = [...prevVal.messages, message];
         return newVal;
@@ -102,7 +139,15 @@ const TaskMessagesDialog = ({ task, setTask, open, setOpen, project = null, setP
   };
 
   const saveMessageHandler = async (message, image) => {
-    if (!message || message === "<p></p>" || !task.assignedUser) return;
+    if (!message || message === "<p></p>") {
+      errorNotificaion("Message can't be empty!");
+      return;
+    }
+
+    if (!task.assignedUser) {
+      errorNotificaion("Task not assigned!");
+      return;
+    }
 
     let newMessage = null;
 
